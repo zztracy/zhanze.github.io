@@ -1,5 +1,5 @@
 ---
-date: 2025-02-07T15:44:52+08:00
+date: "2025-02-07"
 draft: false
-title: My First Post
+title: "My First Post"
 ---
