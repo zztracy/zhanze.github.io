@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="index, follow">
+<title>Java Stack Frame | zztracy blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="
+定义
+栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。
+组成部分
+局部变量表（Local Variable Table）
+
+存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。
+索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中：
+
+public class Example {
+    public void instanceMethod(int param1, String param2) {
+        int localVar = 10;
+        // ...
+    }
+
+    public static void staticMethod(int param) {
+        double localVar = 3.14;
+        // ...
+    }
+}
+在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。">
+<meta name="author" content="">
+<link rel="canonical" href="https://zztracy.github.io/posts/java-stack-frame/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
+<link rel="icon" href="https://zztracy.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zztracy.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zztracy.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://zztracy.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://zztracy.github.io/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="https://zztracy.github.io/posts/java-stack-frame/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript><meta property="og:url" content="https://zztracy.github.io/posts/java-stack-frame/">
+  <meta property="og:site_name" content="zztracy blog">
+  <meta property="og:title" content="Java Stack Frame">
+  <meta property="og:description" content=" 定义 栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。
+组成部分 局部变量表（Local Variable Table） 存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。 索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中： public class Example { public void instanceMethod(int param1, String param2) { int localVar = 10; // ... } public static void staticMethod(int param) { double localVar = 3.14; // ... } } 在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-02-08T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-02-08T00:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Java Stack Frame">
+<meta name="twitter:description" content="
+定义
+栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。
+组成部分
+局部变量表（Local Variable Table）
+
+存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。
+索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中：
+
+public class Example {
+    public void instanceMethod(int param1, String param2) {
+        int localVar = 10;
+        // ...
+    }
+
+    public static void staticMethod(int param) {
+        double localVar = 3.14;
+        // ...
+    }
+}
+在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://zztracy.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Java Stack Frame",
+      "item": "https://zztracy.github.io/posts/java-stack-frame/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Java Stack Frame",
+  "name": "Java Stack Frame",
+  "description": " 定义 栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。\n组成部分 局部变量表（Local Variable Table） 存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。 索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中： public class Example { public void instanceMethod(int param1, String param2) { int localVar = 10; // ... } public static void staticMethod(int param) { double localVar = 3.14; // ... } } 在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。\n",
+  "keywords": [
+    
+  ],
+  "articleBody": " 定义 栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。\n组成部分 局部变量表（Local Variable Table） 存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。 索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中： public class Example { public void instanceMethod(int param1, String param2) { int localVar = 10; // ... } public static void staticMethod(int param) { double localVar = 3.14; // ... } } 在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。\n操作数栈（Operand Stack） 存储中间结果：操作数栈是一个后进先出（LIFO）的栈结构，用于在方法执行过程中存储中间结果和操作数。在方法执行过程中，会将各种中间结果压入操作数栈，然后在需要时从操作数栈中弹出进行计算或其他操作。例如，在执行 a + b 时，会先将 a 和 b 的值从局部变量表中取出，压入操作数栈，然后进行加法运算，将结果再压入操作数栈。 栈深度动态变化：操作数栈的深度在方法执行过程中是动态变化的，其最大深度在编译时就已经确定。不同的字节码指令对操作数栈的操作不同，有些指令会将操作数压入栈中，有些指令会从栈中弹出操作数进行计算。 动态链接（Dynamic Linking） 符号引用解析：每个栈帧都包含一个指向运行时常量池中该栈帧所属方法的引用。在 Java 类文件中，方法调用和变量访问通常使用符号引用（如方法的全限定名、字段名等）来表示。动态链接的作用就是在运行时将这些符号引用解析为直接引用（如方法的实际内存地址、字段的实际内存位置）。 支持多态调用：动态链接使得 Java 能够实现多态调用。在运行时，根据实际对象的类型来确定调用的具体方法，而不是在编译时就确定。例如，通过父类引用调用子类重写的方法时，会在运行时根据实际对象的类型来解析方法的调用。 方法出口（Method Exit） 记录返回信息：方法出口记录了方法执行完毕后返回的位置信息。当一个方法执行完毕后，需要返回到调用该方法的位置继续执行，方法出口就记录了这个调用位置。方法出口有两种情况：正常返回和异常返回。正常返回时，会将方法的返回值压入调用该方法的栈帧的操作数栈中；异常返回时，会跳转到异常处理器进行处理。 栈帧创建与释放 栈帧的创建 方法调用触发栈帧创建 当 Java 程序执行到一个方法调用语句的时候，例如 methodA()调用 methodB()，就会出发 methodB 对应栈帧的创建。方法调用可以通过字节码指令（invokevirtual、invokespecial、invokestatic）来实现，不同的指令用于不同类型方法的调用\n分配栈帧的内存空间\n确定栈帧的大小：在创建栈帧之前，Java 虚拟机会根据方法的字节码信息来确定该栈帧所需的内存大小。这包括局部变量表的大小、操作数栈的最大深度等等 分配内存：Java 虚拟机会在当前线程的虚拟机栈中为新的栈帧分配相应大小的内存空间。 初始化栈帧组件\n局部变量表：将方法调用时传递的参数依次存储在局部变量表中，局部变量表中每个变量的大小在编译的过程中就确定了。 操作数栈：操作数栈在栈帧创建的时候会被初始化为空。操作数栈在方法执行过程中存储中间结果和操作数。 动态链接：符号引用解析（每个栈帧都包含一个指向运行时常量池中该栈帧所属方法的引用。在栈帧创建的时候，会对方法中的符号引用进行解析，将其转为直接引用。符号引用是在编译中的一种表示方式、字段等的引用方式，而直接引用则是指向实际内存地址的引用；建立链接（通过动态链接，栈帧可以在运行的时候找到被调用方法的实际代码位置，从而实现方法的动态调用。 方法出口：实际上就是调用该方法的语句的地址，我们在执行完当前方法后，就可以根据该地址返回到调用该方法的语句。 栈帧的释放 当满足栈帧释放的条件之后，会按照以下步骤进行释放\n返回值处理：如果方法有返回值，将会将返回值压入调用该方法的栈帧的操作数栈中 恢复上层方法的执行状态：从当前栈帧取出方法出口所记录的地址，程序计数器会被设置为该返回地址，这样程序就能回到调用该方法的位置继续执行代码 释放栈帧内存：将当前栈帧所占用的内存空间释放，包括局部变量表、操作数栈、动态链接等所占用的内存。此时，该栈帧从 Java 虚拟机栈弹出，虚拟机恢复到调用之前的状态。 ",
+  "wordCount" : "129",
+  "inLanguage": "en",
+  "datePublished": "2025-02-08T00:00:00Z",
+  "dateModified": "2025-02-08T00:00:00Z",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zztracy.github.io/posts/java-stack-frame/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "zztracy blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zztracy.github.io/favicon.ico"
+    }
+  }
+}
+</script>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="https://zztracy.github.io/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="https://zztracy.github.io/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zztracy.github.io/archives/" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+            <li>
+                <a href="https://zztracy.github.io/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="https://zztracy.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://zztracy.github.io/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Java Stack Frame
+    </h1>
+    <div class="post-meta"><span title='2025-02-08 00:00:00 +0000 UTC'>February 8, 2025</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e5%ae%9a%e4%b9%89" aria-label="定义">定义</a></li>
+                <li>
+                    <a href="#%e7%bb%84%e6%88%90%e9%83%a8%e5%88%86" aria-label="组成部分">组成部分</a><ul>
+                        
+                <li>
+                    <a href="#%e5%b1%80%e9%83%a8%e5%8f%98%e9%87%8f%e8%a1%a8local-variable-table" aria-label="局部变量表（Local Variable Table）">局部变量表（Local Variable Table）</a></li>
+                <li>
+                    <a href="#%e6%93%8d%e4%bd%9c%e6%95%b0%e6%a0%88operand-stack" aria-label="操作数栈（Operand Stack）">操作数栈（Operand Stack）</a></li>
+                <li>
+                    <a href="#%e5%8a%a8%e6%80%81%e9%93%be%e6%8e%a5dynamic-linking" aria-label="动态链接（Dynamic Linking）">动态链接（Dynamic Linking）</a></li>
+                <li>
+                    <a href="#%e6%96%b9%e6%b3%95%e5%87%ba%e5%8f%a3method-exit" aria-label="方法出口（Method Exit）">方法出口（Method Exit）</a></li></ul>
+                </li>
+                <li>
+                    <a href="#%e6%a0%88%e5%b8%a7%e5%88%9b%e5%bb%ba%e4%b8%8e%e9%87%8a%e6%94%be" aria-label="栈帧创建与释放">栈帧创建与释放</a><ul>
+                        
+                <li>
+                    <a href="#%e6%a0%88%e5%b8%a7%e7%9a%84%e5%88%9b%e5%bb%ba" aria-label="栈帧的创建">栈帧的创建</a></li>
+                <li>
+                    <a href="#%e6%a0%88%e5%b8%a7%e7%9a%84%e9%87%8a%e6%94%be" aria-label="栈帧的释放">栈帧的释放</a>
+                </li>
+            </ul>
+            </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="heading"><a hidden class="anchor" aria-hidden="true" href="#heading">#</a></h1>
+<h2 id="定义">定义<a hidden class="anchor" aria-hidden="true" href="#定义">#</a></h2>
+<p>栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。</p>
+<h2 id="组成部分">组成部分<a hidden class="anchor" aria-hidden="true" href="#组成部分">#</a></h2>
+<h3 id="局部变量表local-variable-table">局部变量表（Local Variable Table）<a hidden class="anchor" aria-hidden="true" href="#局部变量表local-variable-table">#</a></h3>
+<ul>
+<li><strong>存储内容</strong>：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 <code>int</code>、<code>double</code>、<code>boolean</code> 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。</li>
+<li><strong>索引方式</strong>：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 <code>this</code> 引用，表示当前对象的引用；对于静态方法，则没有 <code>this</code> 引用。例如，在下面的 Java 方法中：</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-java" data-lang="java"><span style="display:flex;"><span><span style="color:#66d9ef">public</span> <span style="color:#66d9ef">class</span> <span style="color:#a6e22e">Example</span> {
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">instanceMethod</span>(<span style="color:#66d9ef">int</span> param1, String param2) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">int</span> localVar <span style="color:#f92672">=</span> 10;
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// ...</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">public</span> <span style="color:#66d9ef">static</span> <span style="color:#66d9ef">void</span> <span style="color:#a6e22e">staticMethod</span>(<span style="color:#66d9ef">int</span> param) {
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">double</span> localVar <span style="color:#f92672">=</span> 3.<span style="color:#a6e22e">14</span>;
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e">// ...</span>
+</span></span><span style="display:flex;"><span>    }
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>在 <code>instanceMethod</code> 方法的局部变量表中，索引 0 存储 <code>this</code> 引用，索引 1 存储 <code>param1</code>，索引 2 存储 <code>param2</code>，索引 3 存储 <code>localVar</code>；在 <code>staticMethod</code> 方法的局部变量表中，索引 0 存储 <code>param</code>，索引 1 存储 <code>localVar</code>。</p>
+<h3 id="操作数栈operand-stack">操作数栈（Operand Stack）<a hidden class="anchor" aria-hidden="true" href="#操作数栈operand-stack">#</a></h3>
+<ul>
+<li><strong>存储中间结果</strong>：操作数栈是一个后进先出（LIFO）的栈结构，用于在方法执行过程中存储中间结果和操作数。在方法执行过程中，会将各种中间结果压入操作数栈，然后在需要时从操作数栈中弹出进行计算或其他操作。例如，在执行 <code>a + b</code> 时，会先将 <code>a</code> 和 <code>b</code> 的值从局部变量表中取出，压入操作数栈，然后进行加法运算，将结果再压入操作数栈。</li>
+<li><strong>栈深度动态变化</strong>：操作数栈的深度在方法执行过程中是动态变化的，其最大深度在编译时就已经确定。不同的字节码指令对操作数栈的操作不同，有些指令会将操作数压入栈中，有些指令会从栈中弹出操作数进行计算。</li>
+</ul>
+<h3 id="动态链接dynamic-linking">动态链接（Dynamic Linking）<a hidden class="anchor" aria-hidden="true" href="#动态链接dynamic-linking">#</a></h3>
+<ul>
+<li><strong>符号引用解析</strong>：每个栈帧都包含一个指向运行时常量池中该栈帧所属方法的引用。在 Java 类文件中，方法调用和变量访问通常使用符号引用（如方法的全限定名、字段名等）来表示。动态链接的作用就是在运行时将这些符号引用解析为直接引用（如方法的实际内存地址、字段的实际内存位置）。</li>
+<li><strong>支持多态调用</strong>：动态链接使得 Java 能够实现多态调用。在运行时，根据实际对象的类型来确定调用的具体方法，而不是在编译时就确定。例如，通过父类引用调用子类重写的方法时，会在运行时根据实际对象的类型来解析方法的调用。</li>
+</ul>
+<h3 id="方法出口method-exit">方法出口（Method Exit）<a hidden class="anchor" aria-hidden="true" href="#方法出口method-exit">#</a></h3>
+<ul>
+<li><strong>记录返回信息</strong>：方法出口记录了方法执行完毕后返回的位置信息。当一个方法执行完毕后，需要返回到调用该方法的位置继续执行，方法出口就记录了这个调用位置。方法出口有两种情况：正常返回和异常返回。正常返回时，会将方法的返回值压入调用该方法的栈帧的操作数栈中；异常返回时，会跳转到异常处理器进行处理。</li>
+</ul>
+<h2 id="栈帧创建与释放">栈帧创建与释放<a hidden class="anchor" aria-hidden="true" href="#栈帧创建与释放">#</a></h2>
+<h3 id="栈帧的创建">栈帧的创建<a hidden class="anchor" aria-hidden="true" href="#栈帧的创建">#</a></h3>
+<p><strong>方法调用触发栈帧创建</strong>
+当 Java 程序执行到一个方法调用语句的时候，例如 methodA()调用 methodB()，就会出发 methodB 对应栈帧的创建。方法调用可以通过字节码指令（invokevirtual、invokespecial、invokestatic）来实现，不同的指令用于不同类型方法的调用</p>
+<p><strong>分配栈帧的内存空间</strong></p>
+<ul>
+<li>确定栈帧的大小：在创建栈帧之前，Java 虚拟机会根据方法的字节码信息来确定该栈帧所需的内存大小。这包括局部变量表的大小、操作数栈的最大深度等等</li>
+<li>分配内存：Java 虚拟机会在当前线程的虚拟机栈中为新的栈帧分配相应大小的内存空间。</li>
+</ul>
+<p><strong>初始化栈帧组件</strong></p>
+<ul>
+<li>局部变量表：将方法调用时传递的参数依次存储在局部变量表中，局部变量表中每个变量的大小在编译的过程中就确定了。</li>
+<li>操作数栈：操作数栈在栈帧创建的时候会被初始化为空。操作数栈在方法执行过程中存储中间结果和操作数。</li>
+<li>动态链接：符号引用解析（每个栈帧都包含一个指向运行时常量池中该栈帧所属方法的引用。在栈帧创建的时候，会对方法中的符号引用进行解析，将其转为直接引用。符号引用是在编译中的一种表示方式、字段等的引用方式，而直接引用则是指向实际内存地址的引用；建立链接（通过动态链接，栈帧可以在运行的时候找到被调用方法的实际代码位置，从而实现方法的动态调用。</li>
+<li>方法出口：实际上就是调用该方法的语句的地址，我们在执行完当前方法后，就可以根据该地址返回到调用该方法的语句。</li>
+</ul>
+<h3 id="栈帧的释放">栈帧的释放<a hidden class="anchor" aria-hidden="true" href="#栈帧的释放">#</a></h3>
+<p>当满足栈帧释放的条件之后，会按照以下步骤进行释放</p>
+<ol>
+<li>返回值处理：如果方法有返回值，将会将返回值压入调用该方法的栈帧的操作数栈中</li>
+<li>恢复上层方法的执行状态：从当前栈帧取出方法出口所记录的地址，程序计数器会被设置为该返回地址，这样程序就能回到调用该方法的位置继续执行代码</li>
+<li>释放栈帧内存：将当前栈帧所占用的内存空间释放，包括局部变量表、操作数栈、动态链接等所占用的内存。此时，该栈帧从 Java 虚拟机栈弹出，虚拟机恢复到调用之前的状态。</li>
+</ol>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="https://zztracy.github.io/">zztracy blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>

@@ -5,11 +5,27 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <meta name="robots" content="noindex, nofollow">
-<title>My First Post | zztracy blog</title>
+<title>Redis Network Model | zztracy blog</title>
 <meta name="keywords" content="">
-<meta name="description" content="My First Post - zztracy blog">
+<meta name="description" content="Redis 网络模型
+https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/
+1 Redis 网络模型
+![[Redis 网络模型.png]]
+2 Redis 6.0 启用了多线程
+通过对 Redis 的网络模型进行分析我们可以知道，Redis 网络模型的性能瓶颈在于（1）对客户端 socket 的 IO 解析；（2）对客户端 socket 的 IO 回写数据。 瓶颈都是出现在 IO 上
+因此，Redis 针对（1）客户端命令解析；（2）写响应结果这两个环节采用了多线程进行并发的处理
+过程是这样的
+
+在 epoll_wait 的过程中遍历得到待处理的客户端 socket
+一个客户端 socket 在一次请求中可能会传递多个命令
+多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中
+Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中
+Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据
+需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。
+
+![[Multiple threaded model in Redis.png]]">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/my-first-post/">
+<link rel="canonical" href="http://localhost:1313/posts/redis-network-model_%E5%89%AF%E6%9C%AC/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
@@ -18,7 +34,7 @@
 <link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/my-first-post/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/redis-network-model_%E5%89%AF%E6%9C%AC/">
 <noscript>
     <style>
         #theme-toggle,
@@ -98,6 +114,11 @@
             </div>
         </div>
         <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/about" title="About">
+                    <span>About</span>
+                </a>
+            </li>
         </ul>
     </nav>
 </header>
@@ -105,9 +126,9 @@
 
 <article class="post-single">
   <header class="post-header">
-    
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
-      My First Post
+      Redis Network Model
     </h1>
     <div class="post-meta"><span title='2025-02-07 00:00:00 +0000 UTC'>February 7, 2025</span>
 
@@ -115,7 +136,45 @@
   </header> 
 <figure class="entry-cover"><img loading="eager" src="http://localhost:1313/img/redis-network-model.png" alt="This is a post image">
         <p>Redis Network Model</p>
-</figure>
+</figure><div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#redis-%e7%bd%91%e7%bb%9c%e6%a8%a1%e5%9e%8b" aria-label="Redis 网络模型">Redis 网络模型</a></li>
+                <li>
+                    <a href="#1-redis-%e7%bd%91%e7%bb%9c%e6%a8%a1%e5%9e%8b" aria-label="1 Redis 网络模型">1 Redis 网络模型</a></li>
+                <li>
+                    <a href="#2-redis-60-%e5%90%af%e7%94%a8%e4%ba%86%e5%a4%9a%e7%ba%bf%e7%a8%8b" aria-label="2 Redis 6.0 启用了多线程">2 Redis 6.0 启用了多线程</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="redis-网络模型">Redis 网络模型<a hidden class="anchor" aria-hidden="true" href="#redis-网络模型">#</a></h1>
+<p><a href="https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/">https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/</a></p>
+<h1 id="1-redis-网络模型">1 Redis 网络模型<a hidden class="anchor" aria-hidden="true" href="#1-redis-网络模型">#</a></h1>
+<p>![[Redis 网络模型.png]]</p>
+<h1 id="2-redis-60-启用了多线程">2 Redis 6.0 启用了多线程<a hidden class="anchor" aria-hidden="true" href="#2-redis-60-启用了多线程">#</a></h1>
+<p>通过对 Redis 的网络模型进行分析我们可以知道，Redis 网络模型的性能瓶颈在于（1）对客户端 socket 的 IO 解析；（2）对客户端 socket 的 IO 回写数据。 瓶颈都是出现在 IO 上
+因此，Redis 针对（1）客户端命令解析；（2）写响应结果这两个环节采用了多线程进行并发的处理
+过程是这样的</p>
+<ol>
+<li>在 epoll_wait 的过程中遍历得到待处理的客户端 socket</li>
+<li>一个客户端 socket 在一次请求中可能会传递多个命令</li>
+<li>多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中</li>
+<li>Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中</li>
+<li>Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据
+需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。</li>
+</ol>
+<p>![[Multiple threaded model in Redis.png]]</p>
+
+
+  </div>
 
   <footer class="post-footer">
     <ul class="post-tags">

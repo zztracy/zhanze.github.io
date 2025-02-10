@@ -1,4 +1,47 @@
-baseURL: "https://zztracy.github.io/"
-languageCode: en-us
-title: zztracy blog
-theme: [PaperMod]
+baseURL: "https://zztracy.github.io/" #  GitPage 的访问链接
+languageCode: en-us # 语言
+title: zztracy blog # 网站title
+theme: [PaperMod] # 使用的主题，需要和 themes 文件加下的主题文件夹一致才能匹配上
+
+params:
+  homeInfoParams:
+    Title: "探索"
+    Content: >
+      👋 欢迎来到詹泽的博客!
+
+      - **工作经历**
+
+      - OHUP 科技有限公司 后端负责人 2024.4 - 2024.10
+
+      - 华为技术有限公司（OD） 后端开发工程师 2021.7 - 2024.3
+
+      - **教育经历**
+
+      - 硕士 南京体育学院 运动人体科学专业 2018.9 - 2021.7
+
+      - 本科 广东金融学院 计算机科学与技术专业 2014.9 - 2018.7
+    
+  socialIcons:
+    - name: github
+      url: "https://github.com/zztracy"
+  ShowBreadCrumbs: true # 打开文章上方的面包屑导航
+  ShowToc: true
+
+menu:
+  main:
+    - identifier: archives
+      name: Archives
+      url: /archives/
+      weight: 10
+    - name: Search
+      url: search/
+      weight: 10
+    - name: About 
+      url: about/
+      weight: 1
+
+outputs:
+  home:
+    - HTML
+    - RSS
+    - JSON

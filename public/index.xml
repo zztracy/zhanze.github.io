@@ -6,14 +6,87 @@
     <description>Recent content on zztracy blog</description>
     <generator>Hugo -- 0.143.1</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 07 Feb 2025 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Sat, 08 Feb 2025 00:00:00 +0000</lastBuildDate>
     <atom:link href="https://zztracy.github.io/index.xml" rel="self" type="application/rss+xml" />
     <item>
-      <title>My First Post</title>
-      <link>https://zztracy.github.io/posts/my-first-post/</link>
+      <title>Java Stack Frame</title>
+      <link>https://zztracy.github.io/posts/java-stack-frame/</link>
+      <pubDate>Sat, 08 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://zztracy.github.io/posts/java-stack-frame/</guid>
+      <description>&lt;h1 id=&#34;heading&#34;&gt;&lt;/h1&gt;
+&lt;h2 id=&#34;定义&#34;&gt;定义&lt;/h2&gt;
+&lt;p&gt;栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。&lt;/p&gt;
+&lt;h2 id=&#34;组成部分&#34;&gt;组成部分&lt;/h2&gt;
+&lt;h3 id=&#34;局部变量表local-variable-table&#34;&gt;局部变量表（Local Variable Table）&lt;/h3&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;strong&gt;存储内容&lt;/strong&gt;：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 &lt;code&gt;int&lt;/code&gt;、&lt;code&gt;double&lt;/code&gt;、&lt;code&gt;boolean&lt;/code&gt; 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。&lt;/li&gt;
+&lt;li&gt;&lt;strong&gt;索引方式&lt;/strong&gt;：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 &lt;code&gt;this&lt;/code&gt; 引用，表示当前对象的引用；对于静态方法，则没有 &lt;code&gt;this&lt;/code&gt; 引用。例如，在下面的 Java 方法中：&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-java&#34; data-lang=&#34;java&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;class&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;Example&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;instanceMethod&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; param1, String param2) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; localVar &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; 10;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// ...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    &lt;span style=&#34;color:#66d9ef&#34;&gt;public&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;static&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;staticMethod&lt;/span&gt;(&lt;span style=&#34;color:#66d9ef&#34;&gt;int&lt;/span&gt; param) {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#66d9ef&#34;&gt;double&lt;/span&gt; localVar &lt;span style=&#34;color:#f92672&#34;&gt;=&lt;/span&gt; 3.&lt;span style=&#34;color:#a6e22e&#34;&gt;14&lt;/span&gt;;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;        &lt;span style=&#34;color:#75715e&#34;&gt;// ...&lt;/span&gt;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;    }
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在 &lt;code&gt;instanceMethod&lt;/code&gt; 方法的局部变量表中，索引 0 存储 &lt;code&gt;this&lt;/code&gt; 引用，索引 1 存储 &lt;code&gt;param1&lt;/code&gt;，索引 2 存储 &lt;code&gt;param2&lt;/code&gt;，索引 3 存储 &lt;code&gt;localVar&lt;/code&gt;；在 &lt;code&gt;staticMethod&lt;/code&gt; 方法的局部变量表中，索引 0 存储 &lt;code&gt;param&lt;/code&gt;，索引 1 存储 &lt;code&gt;localVar&lt;/code&gt;。&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Redis Network Model</title>
+      <link>https://zztracy.github.io/posts/redis-network-model/</link>
       <pubDate>Fri, 07 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/my-first-post/</guid>
-      <description></description>
+      <guid>https://zztracy.github.io/posts/redis-network-model/</guid>
+      <description>&lt;h1 id=&#34;redis-网络模型&#34;&gt;Redis 网络模型&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&#34;&gt;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;1-redis-网络模型&#34;&gt;1 Redis 网络模型&lt;/h1&gt;
+&lt;h1 id=&#34;2-redis-60-启用了多线程&#34;&gt;2 Redis 6.0 启用了多线程&lt;/h1&gt;
+&lt;p&gt;通过对 Redis 的网络模型进行分析我们可以知道，Redis 网络模型的性能瓶颈在于（1）对客户端 socket 的 IO 解析；（2）对客户端 socket 的 IO 回写数据。 瓶颈都是出现在 IO 上
+因此，Redis 针对（1）客户端命令解析；（2）写响应结果这两个环节采用了多线程进行并发的处理
+过程是这样的&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在 epoll_wait 的过程中遍历得到待处理的客户端 socket&lt;/li&gt;
+&lt;li&gt;一个客户端 socket 在一次请求中可能会传递多个命令&lt;/li&gt;
+&lt;li&gt;多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中&lt;/li&gt;
+&lt;li&gt;Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中&lt;/li&gt;
+&lt;li&gt;Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据
+需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。&lt;/li&gt;
+&lt;/ol&gt;</description>
+    </item>
+    <item>
+      <title>Redis Network Model</title>
+      <link>https://zztracy.github.io/redis-network-model/</link>
+      <pubDate>Fri, 07 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>https://zztracy.github.io/redis-network-model/</guid>
+      <description>&lt;h1 id=&#34;redis-网络模型&#34;&gt;Redis 网络模型&lt;/h1&gt;
+&lt;p&gt;&lt;a href=&#34;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&#34;&gt;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&lt;/a&gt;&lt;/p&gt;
+&lt;h1 id=&#34;1-redis-网络模型&#34;&gt;1 Redis 网络模型&lt;/h1&gt;
+&lt;p&gt;![[Redis 网络模型.png]]&lt;/p&gt;
+&lt;h1 id=&#34;2-redis-60-启用了多线程&#34;&gt;2 Redis 6.0 启用了多线程&lt;/h1&gt;
+&lt;p&gt;通过对 Redis 的网络模型进行分析我们可以知道，Redis 网络模型的性能瓶颈在于（1）对客户端 socket 的 IO 解析；（2）对客户端 socket 的 IO 回写数据。 瓶颈都是出现在 IO 上
+因此，Redis 针对（1）客户端命令解析；（2）写响应结果这两个环节采用了多线程进行并发的处理
+过程是这样的&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;在 epoll_wait 的过程中遍历得到待处理的客户端 socket&lt;/li&gt;
+&lt;li&gt;一个客户端 socket 在一次请求中可能会传递多个命令&lt;/li&gt;
+&lt;li&gt;多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中&lt;/li&gt;
+&lt;li&gt;Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中&lt;/li&gt;
+&lt;li&gt;Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据
+需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。&lt;/li&gt;
+&lt;/ol&gt;
+&lt;p&gt;![[Multiple threaded model in Redis.png]]&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>About</title>
+      <link>https://zztracy.github.io/about/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>https://zztracy.github.io/about/</guid>
+      <description>&lt;h2 id=&#34;about&#34;&gt;about&lt;/h2&gt;
+&lt;h1 id=&#34;ss&#34;&gt;ss&lt;/h1&gt;
+&lt;p&gt;ssss&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
