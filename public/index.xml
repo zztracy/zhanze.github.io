@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>zztracy blog</title>
-    <link>https://zztracy.github.io/</link>
+    <link>http://localhost:1313/</link>
     <description>Recent content on zztracy blog</description>
     <generator>Hugo -- 0.143.1</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 08 Feb 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://zztracy.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Java Stack Frame</title>
-      <link>https://zztracy.github.io/posts/java-stack-frame/</link>
+      <link>http://localhost:1313/posts/java-stack-frame/</link>
       <pubDate>Sat, 08 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/java-stack-frame/</guid>
+      <guid>http://localhost:1313/posts/java-stack-frame/</guid>
       <description>&lt;h1 id=&#34;heading&#34;&gt;&lt;/h1&gt;
 &lt;h2 id=&#34;定义&#34;&gt;定义&lt;/h2&gt;
 &lt;p&gt;栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。&lt;/p&gt;
@@ -36,10 +36,49 @@
 &lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;在 &lt;code&gt;instanceMethod&lt;/code&gt; 方法的局部变量表中，索引 0 存储 &lt;code&gt;this&lt;/code&gt; 引用，索引 1 存储 &lt;code&gt;param1&lt;/code&gt;，索引 2 存储 &lt;code&gt;param2&lt;/code&gt;，索引 3 存储 &lt;code&gt;localVar&lt;/code&gt;；在 &lt;code&gt;staticMethod&lt;/code&gt; 方法的局部变量表中，索引 0 存储 &lt;code&gt;param&lt;/code&gt;，索引 1 存储 &lt;code&gt;localVar&lt;/code&gt;。&lt;/p&gt;</description>
     </item>
     <item>
+      <title>Redis 数据编码 SDS</title>
+      <link>http://localhost:1313/posts/redis-encoding-sds/</link>
+      <pubDate>Sat, 08 Feb 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/redis-encoding-sds/</guid>
+      <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
+&lt;p&gt;我们知道 Redis 是基于 C 语言进行开发的，但是 Redis 字符串底层使用的却不是 C 语言的字符串数据结构，而是自己创建了一种数据结构称为 SDS（Simple Dynamic String，简单动态字符串），这是因为 C 语言的字符串存在许多问题，针对这些问题，Redis 自己定义了 SDS 来解决：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;字符串长度的获取&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C 语言字符串：需要进行遍历运算，直到遇见&lt;code&gt;&#39;\0&#39;&lt;/code&gt;，时间复杂度 O(n)&lt;/li&gt;
+&lt;li&gt;SDS：在 SDS 的数据结构中，存在属性 len 记录着字符串的长度，时间复杂度 O(1)&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;缓冲区溢出问题&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C 语言字符串：由于 C 语言字符串不记录自身长度，在进行字符串拼接操作时，如果没有提前分配足够的内存，就容易发生缓冲区溢出。&lt;/li&gt;
+&lt;li&gt;SDS：SDS 在进行字符串修改操作的时候，会首先检查空间是否足够，如果空间不足够会自动进行扩容，避免缓冲区溢出的风险&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;
+&lt;p&gt;内存分配效率&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;C 语言字符串：对 C 语言字符串进行修改时，每次可能都需要重新分配内存并且复制数据，频繁的内存分配和释放操作会带来较大的开销&lt;/li&gt;
+&lt;li&gt;SDS：SDS 采用了空间预分配策略。空间预分配是指在扩容的时候，除了分配所需要的空间，还会额外预先分配一些额外的空间，减少了后续操作时再次进行内存分配的概率。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;/ol&gt;
+&lt;h1 id=&#34;sds-的结构&#34;&gt;SDS 的结构&lt;/h1&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; &lt;span style=&#34;color:#a6e22e&#34;&gt;__attribute__&lt;/span&gt; ((__packed__)) sdshdr8 {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;uint_t&lt;/span&gt; len; &lt;span style=&#34;color:#75715e&#34;&gt;// 表示 buf 数组中保存的字符字节数，不包含结束标识
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;uint_t&lt;/span&gt; alloc; &lt;span style=&#34;color:#75715e&#34;&gt;// 表示 buf 数组申请的总总字节数，不包含结束表示
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;char&lt;/span&gt; flags; &lt;span style=&#34;color:#75715e&#34;&gt;// 不同 SDS 的头类型，用来控制 SDS 的大小
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;  &lt;span style=&#34;color:#66d9ef&#34;&gt;char&lt;/span&gt; buf[]; &lt;span style=&#34;color:#75715e&#34;&gt;// 字符串的底层数组
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;}
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;p&gt;属性 flags 的值是预定义好的宏&lt;/p&gt;</description>
+    </item>
+    <item>
       <title>Redis Network Model</title>
-      <link>https://zztracy.github.io/posts/redis-network-model/</link>
+      <link>http://localhost:1313/posts/redis-network-model/</link>
       <pubDate>Fri, 07 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/redis-network-model/</guid>
+      <guid>http://localhost:1313/posts/redis-network-model/</guid>
       <description>&lt;h1 id=&#34;redis-网络模型&#34;&gt;Redis 网络模型&lt;/h1&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&#34;&gt;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;1-redis-网络模型&#34;&gt;1 Redis 网络模型&lt;/h1&gt;
@@ -58,9 +97,9 @@
     </item>
     <item>
       <title>Redis Network Model</title>
-      <link>https://zztracy.github.io/redis-network-model/</link>
+      <link>http://localhost:1313/redis-network-model/</link>
       <pubDate>Fri, 07 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/redis-network-model/</guid>
+      <guid>http://localhost:1313/redis-network-model/</guid>
       <description>&lt;h1 id=&#34;redis-网络模型&#34;&gt;Redis 网络模型&lt;/h1&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&#34;&gt;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;1-redis-网络模型&#34;&gt;1 Redis 网络模型&lt;/h1&gt;
@@ -81,12 +120,44 @@
     </item>
     <item>
       <title>About</title>
-      <link>https://zztracy.github.io/about/</link>
+      <link>http://localhost:1313/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/about/</guid>
-      <description>&lt;h2 id=&#34;about&#34;&gt;about&lt;/h2&gt;
-&lt;h1 id=&#34;ss&#34;&gt;ss&lt;/h1&gt;
-&lt;p&gt;ssss&lt;/p&gt;</description>
+      <guid>http://localhost:1313/about/</guid>
+      <description>&lt;h1 id=&#34;job-experience&#34;&gt;Job Experience&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;Backend Project Manager @ OHUP | Apr-2024 - Oct-2024&lt;/li&gt;
+&lt;li&gt;Back-end Development Engineer@ FESCO.Adecco. | July-2021 - Mar-2024&lt;/li&gt;
+&lt;/ul&gt;
+&lt;h1 id=&#34;technical-skills&#34;&gt;Technical Skills&lt;/h1&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;- Programming/ Scripting Languages :
+	Java
+	C
+	JavaScript
+	Bash
+- Operating Systems :
+	Linux(CentOS)
+- SQL
+	MySQL
+	Redis
+- MiddleWare
+	RabbitMQ
+	Dubbo
+	Zookeeper
+- Infra
+	Docker
+	K8s
+&lt;/code&gt;&lt;/pre&gt;&lt;h1 id=&#34;pc-configuration&#34;&gt;PC Configuration&lt;/h1&gt;
+&lt;p&gt;MacBook M1 2020&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;Disk: 256GB
+RAM: 8G
+OS: MacOS Sonoma 14.5
+&lt;/code&gt;&lt;/pre&gt;&lt;p&gt;Desktop&lt;/p&gt;
+&lt;pre tabindex=&#34;0&#34;&gt;&lt;code&gt;CPU: AMD Ryzen5 5600G CPU @ 3.90GHz
+GPU: AMD Radeon Vega Graphics 7
+Disk: 1T SSD
+RAM: 32GB
+OS: Windows 11
+&lt;/code&gt;&lt;/pre&gt;</description>
     </item>
   </channel>
 </rss>

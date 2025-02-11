@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto">
 
-<head><meta charset="utf-8">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="noindex, nofollow">
 <title>Java Stack Frame | zztracy blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="
@@ -29,16 +29,16 @@ public class Example {
 }
 在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。">
 <meta name="author" content="">
-<link rel="canonical" href="https://zztracy.github.io/posts/java-stack-frame/">
+<link rel="canonical" href="http://localhost:1313/posts/java-stack-frame/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://zztracy.github.io/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://zztracy.github.io/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://zztracy.github.io/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://zztracy.github.io/apple-touch-icon.png">
-<link rel="mask-icon" href="https://zztracy.github.io/safari-pinned-tab.svg">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="https://zztracy.github.io/posts/java-stack-frame/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/java-stack-frame/">
 <noscript>
     <style>
         #theme-toggle,
@@ -75,90 +75,7 @@ public class Example {
         }
 
     </style>
-</noscript><meta property="og:url" content="https://zztracy.github.io/posts/java-stack-frame/">
-  <meta property="og:site_name" content="zztracy blog">
-  <meta property="og:title" content="Java Stack Frame">
-  <meta property="og:description" content=" 定义 栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。
-组成部分 局部变量表（Local Variable Table） 存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。 索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中： public class Example { public void instanceMethod(int param1, String param2) { int localVar = 10; // ... } public static void staticMethod(int param) { double localVar = 3.14; // ... } } 在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。">
-  <meta property="og:locale" content="en-us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2025-02-08T00:00:00+00:00">
-    <meta property="article:modified_time" content="2025-02-08T00:00:00+00:00">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Java Stack Frame">
-<meta name="twitter:description" content="
-定义
-栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。
-组成部分
-局部变量表（Local Variable Table）
-
-存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。
-索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中：
-
-public class Example {
-    public void instanceMethod(int param1, String param2) {
-        int localVar = 10;
-        // ...
-    }
-
-    public static void staticMethod(int param) {
-        double localVar = 3.14;
-        // ...
-    }
-}
-在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。">
-
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://zztracy.github.io/posts/"
-    }, 
-    {
-      "@type": "ListItem",
-      "position":  2 ,
-      "name": "Java Stack Frame",
-      "item": "https://zztracy.github.io/posts/java-stack-frame/"
-    }
-  ]
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "Java Stack Frame",
-  "name": "Java Stack Frame",
-  "description": " 定义 栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。\n组成部分 局部变量表（Local Variable Table） 存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。 索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中： public class Example { public void instanceMethod(int param1, String param2) { int localVar = 10; // ... } public static void staticMethod(int param) { double localVar = 3.14; // ... } } 在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。\n",
-  "keywords": [
-    
-  ],
-  "articleBody": " 定义 栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。\n组成部分 局部变量表（Local Variable Table） 存储内容：局部变量表用于存储方法的参数和方法内部定义的局部变量。它是一个数组结构，每个元素可以存储一个基本数据类型（如 int、double、boolean 等）、一个引用类型（如对象引用、数组引用）或一个返回地址。 索引方式：局部变量通过索引来访问，索引从 0 开始。对于实例方法，局部变量表的第 0 个位置通常存储的是 this 引用，表示当前对象的引用；对于静态方法，则没有 this 引用。例如，在下面的 Java 方法中： public class Example { public void instanceMethod(int param1, String param2) { int localVar = 10; // ... } public static void staticMethod(int param) { double localVar = 3.14; // ... } } 在 instanceMethod 方法的局部变量表中，索引 0 存储 this 引用，索引 1 存储 param1，索引 2 存储 param2，索引 3 存储 localVar；在 staticMethod 方法的局部变量表中，索引 0 存储 param，索引 1 存储 localVar。\n操作数栈（Operand Stack） 存储中间结果：操作数栈是一个后进先出（LIFO）的栈结构，用于在方法执行过程中存储中间结果和操作数。在方法执行过程中，会将各种中间结果压入操作数栈，然后在需要时从操作数栈中弹出进行计算或其他操作。例如，在执行 a + b 时，会先将 a 和 b 的值从局部变量表中取出，压入操作数栈，然后进行加法运算，将结果再压入操作数栈。 栈深度动态变化：操作数栈的深度在方法执行过程中是动态变化的，其最大深度在编译时就已经确定。不同的字节码指令对操作数栈的操作不同，有些指令会将操作数压入栈中，有些指令会从栈中弹出操作数进行计算。 动态链接（Dynamic Linking） 符号引用解析：每个栈帧都包含一个指向运行时常量池中该栈帧所属方法的引用。在 Java 类文件中，方法调用和变量访问通常使用符号引用（如方法的全限定名、字段名等）来表示。动态链接的作用就是在运行时将这些符号引用解析为直接引用（如方法的实际内存地址、字段的实际内存位置）。 支持多态调用：动态链接使得 Java 能够实现多态调用。在运行时，根据实际对象的类型来确定调用的具体方法，而不是在编译时就确定。例如，通过父类引用调用子类重写的方法时，会在运行时根据实际对象的类型来解析方法的调用。 方法出口（Method Exit） 记录返回信息：方法出口记录了方法执行完毕后返回的位置信息。当一个方法执行完毕后，需要返回到调用该方法的位置继续执行，方法出口就记录了这个调用位置。方法出口有两种情况：正常返回和异常返回。正常返回时，会将方法的返回值压入调用该方法的栈帧的操作数栈中；异常返回时，会跳转到异常处理器进行处理。 栈帧创建与释放 栈帧的创建 方法调用触发栈帧创建 当 Java 程序执行到一个方法调用语句的时候，例如 methodA()调用 methodB()，就会出发 methodB 对应栈帧的创建。方法调用可以通过字节码指令（invokevirtual、invokespecial、invokestatic）来实现，不同的指令用于不同类型方法的调用\n分配栈帧的内存空间\n确定栈帧的大小：在创建栈帧之前，Java 虚拟机会根据方法的字节码信息来确定该栈帧所需的内存大小。这包括局部变量表的大小、操作数栈的最大深度等等 分配内存：Java 虚拟机会在当前线程的虚拟机栈中为新的栈帧分配相应大小的内存空间。 初始化栈帧组件\n局部变量表：将方法调用时传递的参数依次存储在局部变量表中，局部变量表中每个变量的大小在编译的过程中就确定了。 操作数栈：操作数栈在栈帧创建的时候会被初始化为空。操作数栈在方法执行过程中存储中间结果和操作数。 动态链接：符号引用解析（每个栈帧都包含一个指向运行时常量池中该栈帧所属方法的引用。在栈帧创建的时候，会对方法中的符号引用进行解析，将其转为直接引用。符号引用是在编译中的一种表示方式、字段等的引用方式，而直接引用则是指向实际内存地址的引用；建立链接（通过动态链接，栈帧可以在运行的时候找到被调用方法的实际代码位置，从而实现方法的动态调用。 方法出口：实际上就是调用该方法的语句的地址，我们在执行完当前方法后，就可以根据该地址返回到调用该方法的语句。 栈帧的释放 当满足栈帧释放的条件之后，会按照以下步骤进行释放\n返回值处理：如果方法有返回值，将会将返回值压入调用该方法的栈帧的操作数栈中 恢复上层方法的执行状态：从当前栈帧取出方法出口所记录的地址，程序计数器会被设置为该返回地址，这样程序就能回到调用该方法的位置继续执行代码 释放栈帧内存：将当前栈帧所占用的内存空间释放，包括局部变量表、操作数栈、动态链接等所占用的内存。此时，该栈帧从 Java 虚拟机栈弹出，虚拟机恢复到调用之前的状态。 ",
-  "wordCount" : "129",
-  "inLanguage": "en",
-  "datePublished": "2025-02-08T00:00:00Z",
-  "dateModified": "2025-02-08T00:00:00Z",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://zztracy.github.io/posts/java-stack-frame/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "zztracy blog",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://zztracy.github.io/favicon.ico"
-    }
-  }
-}
-</script>
+</noscript>
 </head>
 
 <body class="" id="top">
@@ -176,7 +93,7 @@ public class Example {
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://zztracy.github.io/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
+            <a href="http://localhost:1313/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -202,17 +119,17 @@ public class Example {
         </div>
         <ul id="menu">
             <li>
-                <a href="https://zztracy.github.io/about/" title="About">
+                <a href="http://localhost:1313/about/" title="About">
                     <span>About</span>
                 </a>
             </li>
             <li>
-                <a href="https://zztracy.github.io/archives/" title="Archives">
+                <a href="http://localhost:1313/archives/" title="Archives">
                     <span>Archives</span>
                 </a>
             </li>
             <li>
-                <a href="https://zztracy.github.io/search/" title="Search (Alt &#43; /)" accesskey=/>
+                <a href="http://localhost:1313/search/" title="Search (Alt &#43; /)" accesskey=/>
                     <span>Search</span>
                 </a>
             </li>
@@ -223,7 +140,7 @@ public class Example {
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="https://zztracy.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://zztracy.github.io/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Java Stack Frame
     </h1>
@@ -336,7 +253,7 @@ public class Example {
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="https://zztracy.github.io/">zztracy blog</a></span> · 
+        <span>&copy; 2025 <a href="http://localhost:1313/">zztracy blog</a></span> · 
 
     <span>
         Powered by
