@@ -8,9 +8,6 @@
     <loc>http://localhost:1313/posts/</loc>
     <lastmod>2025-02-08T00:00:00+00:00</lastmod>
   </url><url>
-    <loc>http://localhost:1313/posts/redis-encoding-sds/</loc>
-    <lastmod>2025-02-08T00:00:00+00:00</lastmod>
-  </url><url>
     <loc>http://localhost:1313/</loc>
     <lastmod>2025-02-08T00:00:00+00:00</lastmod>
   </url><url>
@@ -19,6 +16,9 @@
   </url><url>
     <loc>http://localhost:1313/redis-network-model/</loc>
     <lastmod>2025-02-07T00:00:00+00:00</lastmod>
+  </url><url>
+    <loc>http://localhost:1313/posts/redis-encoding-sds/</loc>
+    <lastmod>2025-01-11T00:00:00+00:00</lastmod>
   </url><url>
     <loc>http://localhost:1313/about/</loc>
   </url><url>

@@ -1,7 +1,7 @@
 ---
 date: "2025-02-08"
 draft: false
-title: "Java Stack Frame"
+title: "Java 栈帧"
 ---
 
 # 

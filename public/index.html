@@ -153,7 +153,7 @@
 
 <article class="post-entry"> 
   <header class="entry-header">
-    <h2 class="entry-hint-parent">Java Stack Frame
+    <h2 class="entry-hint-parent">Java 栈帧
     </h2>
   </header>
   <div class="entry-content">
@@ -162,7 +162,38 @@
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-02-08 00:00:00 +0000 UTC'>February 8, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Java Stack Frame" href="http://localhost:1313/posts/java-stack-frame/"></a>
+  <a class="entry-link" aria-label="post link to Java 栈帧" href="http://localhost:1313/posts/java-stack-frame/"></a>
+</article>
+
+<article class="post-entry"> 
+<figure class="entry-cover"><img loading="lazy" src="http://localhost:1313/img/redis-network-model.png" alt="This is a post image">
+</figure>
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Redis 网络模型
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>Redis 网络模型 https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/
+1 Redis 网络模型 2 Redis 6.0 启用了多线程 通过对 Redis 的网络模型进行分析我们可以知道，Redis 网络模型的性能瓶颈在于（1）对客户端 socket 的 IO 解析；（2）对客户端 socket 的 IO 回写数据。 瓶颈都是出现在 IO 上 因此，Redis 针对（1）客户端命令解析；（2）写响应结果这两个环节采用了多线程进行并发的处理 过程是这样的
+在 epoll_wait 的过程中遍历得到待处理的客户端 socket 一个客户端 socket 在一次请求中可能会传递多个命令 多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中 Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中 Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据 需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。 </p>
+  </div>
+  <footer class="entry-footer"><span title='2025-02-07 00:00:00 +0000 UTC'>February 7, 2025</span></footer>
+  <a class="entry-link" aria-label="post link to Redis 网络模型" href="http://localhost:1313/posts/redis-network-model/redis-network-model/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Redis 数据编码 IntSet
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 在 Redis中，IntSet（整数集合）是一种用来保存整数值集合的抽象数据结构，当一个集合只包含整数值元素，并且元素数量不多的时候，Redis 就会用 IntSet 来存储该集合。
+IntSet 的数据结构 typedef struct intset { uint32_t encoding; // 编码方式，支持16位，32位，64位整数，对应 short、int、long uint32_t length; // 元素个数 int8_t contents[]; // 整数数组，保存集合数据 } intset; encoding：表示 IntSet 的编码方式，它决定了contents数组中每个元素的类型。Redis 支持三种长度的编码 #define INTSET_ENC_INT16 (sizeof(int16_t)) // 相当于 java short #define INTSET_ENC_INT32 (sizeof(int32_t)) // 相当于 java int #define INTSET_ENC_INT64 (sizeof(int64_t)) // 相当于 java long length：表示IntSet 中实际存储的元素的个数 contents：是一个整数数组，数组中的元素按照从小到大的顺序进行排列，这样可以方便进行二分查找 IntSet 的主要特点 内存紧凑 假如 IntSet 的encoding 是 INTSET_ENC_INT16，那么数组中每个数字占用的大小都是 16 位，两个字节
+文件头占用的大小为 encoding（4 字节） &#43; length （4 字节）
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-01-11 00:00:00 +0000 UTC'>January 11, 2025</span></footer>
+  <a class="entry-link" aria-label="post link to Redis 数据编码 IntSet" href="http://localhost:1313/posts/redis-encoding-intset/"></a>
 </article>
 
 <article class="post-entry"> 
@@ -178,24 +209,8 @@ C 语言字符串：由于 C 语言字符串不记录自身长度，在进行字
 C 语言字符串：对 C 语言字符串进行修改时，每次可能都需要重新分配内存并且复制数据，频繁的内存分配和释放操作会带来较大的开销 SDS：SDS 采用了空间预分配策略。空间预分配是指在扩容的时候，除了分配所需要的空间，还会额外预先分配一些额外的空间，减少了后续操作时再次进行内存分配的概率。 SDS 的结构 struct __attribute__ ((__packed__)) sdshdr8 { uint_t len; // 表示 buf 数组中保存的字符字节数，不包含结束标识 uint_t alloc; // 表示 buf 数组申请的总总字节数，不包含结束表示 unsigned char flags; // 不同 SDS 的头类型，用来控制 SDS 的大小 char buf[]; // 字符串的底层数组 } 属性 flags 的值是预定义好的宏
 ...</p>
   </div>
-  <footer class="entry-footer"><span title='2025-02-08 00:00:00 +0000 UTC'>February 8, 2025</span></footer>
+  <footer class="entry-footer"><span title='2025-01-11 00:00:00 +0000 UTC'>January 11, 2025</span></footer>
   <a class="entry-link" aria-label="post link to Redis 数据编码 SDS" href="http://localhost:1313/posts/redis-encoding-sds/"></a>
-</article>
-
-<article class="post-entry"> 
-<figure class="entry-cover"><img loading="lazy" src="http://localhost:1313/img/redis-network-model.png" alt="This is a post image">
-</figure>
-  <header class="entry-header">
-    <h2 class="entry-hint-parent">Redis Network Model
-    </h2>
-  </header>
-  <div class="entry-content">
-    <p>Redis 网络模型 https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/
-1 Redis 网络模型 2 Redis 6.0 启用了多线程 通过对 Redis 的网络模型进行分析我们可以知道，Redis 网络模型的性能瓶颈在于（1）对客户端 socket 的 IO 解析；（2）对客户端 socket 的 IO 回写数据。 瓶颈都是出现在 IO 上 因此，Redis 针对（1）客户端命令解析；（2）写响应结果这两个环节采用了多线程进行并发的处理 过程是这样的
-在 epoll_wait 的过程中遍历得到待处理的客户端 socket 一个客户端 socket 在一次请求中可能会传递多个命令 多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中 Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中 Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据 需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。 </p>
-  </div>
-  <footer class="entry-footer"><span title='2025-02-07 00:00:00 +0000 UTC'>February 7, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Redis Network Model" href="http://localhost:1313/posts/redis-network-model/"></a>
 </article>
     </main>
     
