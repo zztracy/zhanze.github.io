@@ -162,7 +162,7 @@
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-02-08 00:00:00 +0000 UTC'>February 8, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Java 栈帧" href="http://localhost:1313/posts/java-stack-frame/"></a>
+  <a class="entry-link" aria-label="post link to Java 栈帧" href="http://localhost:1313/posts/jvm/java-stack-frame/"></a>
 </article>
 
 <article class="post-entry"> 
@@ -178,7 +178,37 @@
 在 epoll_wait 的过程中遍历得到待处理的客户端 socket 一个客户端 socket 在一次请求中可能会传递多个命令 多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中 Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中 Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据 需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。 </p>
   </div>
   <footer class="entry-footer"><span title='2025-02-07 00:00:00 +0000 UTC'>February 7, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Redis 网络模型" href="http://localhost:1313/posts/redis-network-model/redis-network-model/"></a>
+  <a class="entry-link" aria-label="post link to Redis 网络模型" href="http://localhost:1313/posts/redis/redis-network-model/redis-network-model/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Redis 数据编码 Dict
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。
+Dict的数据结构 Dict由三部分组成：
+哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针 哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息 字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash # dict.h typedef struct dictEntry { void *key; // 键 union { void *val; uint64_t u64; int64_t s64; double d; } v; // 下一个Entry的指针 struct dictEntry *next; } dictEntry; # dict.h typedef struct dictht { // 哈希表数组，每个元素都是指向 dictEntry 的指针 dictEntry **table; // 哈希表的大小，即table 数组的长度 unsigned long size; // 哈希表大小掩码，用于计算索引，值为 size-1 unsigned long sizemark; // 已使用的哈希表节点数量 unsigned long used; } dictht; // dict.h typedef struct dict { dictType *type; // dict类型，内置不同的hash函数 void *privadata; // 私有数据，在做特殊hash运行的时候用 dictht ht[2]; // 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用 long rehashidx; // rehash的进度，-1标识未执行 int16_t pausereshah; // rehash是否暂停，1为暂停，0为继续 } dict; 2 Dict的扩容 Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。 Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-01-13 00:00:00 +0000 UTC'>January 13, 2025</span></footer>
+  <a class="entry-link" aria-label="post link to Redis 数据编码 Dict" href="http://localhost:1313/posts/redis/redis-encoding-dict/"></a>
+</article>
+
+<article class="post-entry"> 
+  <header class="entry-header">
+    <h2 class="entry-hint-parent">Redis 数据编码 ZipList
+    </h2>
+  </header>
+  <div class="entry-content">
+    <p>概述 ZipList 压缩列表。采用了紧凑的数据结构。 ZipList是一种特殊的“双端链表”，由一系列的特殊编码的连续内存块组成。可以在任意一段进行push/pop操作，并且该操作的时间复杂度是O(1)。 如果采用传统的链表方式存储数据的话，单单是一个指针就需要 8 个字节的内存，双端链表的每个节点都需要 2 * 8 个字节的指针来实现。而且链表所占的内存空间不连续，容易造成内存碎片化。
+2 ZipList 的结构 zlbytes 表示 ziplist 的总字节数 zltail 表示最后一个节点与 ziplist 起始地址之间的偏移量 zllen 表示 entry 的节点数量 若干个 entry 节点 zlend ziplist 的结束表示 0xff ![[ziplist 的结构.png]] 双端链表的固定长度 zltypes 4bytes ztail 4bytes zlen 2bytes zlend 1byte 固定需要 11 个字节 entry 节点固定 需要 2 - 10 个字节，加上存储的数据的内容，最小可以去到 3 个字节
+属性 类型 长度 用途 zlbytes unit32_t 4 字节 记录压缩列表占用的字节数，4 个字节能够对4GB 的空间进行寻址了。也就是说理论上一个 ziplist 最大就是 4GB zltail uint32_t 4 字节 记录压缩列表尾节点距离起始地址有多少字节，通过这个偏移量，能够确定尾节点的地址 zlen uint_16 2 字节 记录了压缩列表包含的节点数量。最大值为UINT16_MAX（65534），如果超过这个值，此处会记录为 65535，但是节点的真实数量需要遍历整个压缩列表才能计算得出 entry 列表节点 不定 压缩列表包含各个节点，节点的长度由节点保存的内容决定 zlend uint_8 1 字节 特殊值 0xFF（十进制 255），用于记录压缩列表的末端 3 ZipListEntry的结构 ZipListEntry 中的 Entry 并不像普通链表那样记录前后节点的指针，因为记录两个指针需要占用 16 个字节，浪费内存。而是采用了下面的结构 previous_entry_length | encoding | content
+...</p>
+  </div>
+  <footer class="entry-footer"><span title='2025-01-12 00:00:00 +0000 UTC'>January 12, 2025</span></footer>
+  <a class="entry-link" aria-label="post link to Redis 数据编码 ZipList" href="http://localhost:1313/posts/redis/redis-encoding-ziplist/"></a>
 </article>
 
 <article class="post-entry"> 
@@ -193,7 +223,7 @@ IntSet 的数据结构 typedef struct intset { uint32_t encoding; // 编码方�
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-01-11 00:00:00 +0000 UTC'>January 11, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Redis 数据编码 IntSet" href="http://localhost:1313/posts/redis-encoding-intset/"></a>
+  <a class="entry-link" aria-label="post link to Redis 数据编码 IntSet" href="http://localhost:1313/posts/redis/redis-encoding-intset/"></a>
 </article>
 
 <article class="post-entry"> 
@@ -210,7 +240,7 @@ C 语言字符串：对 C 语言字符串进行修改时，每次可能都需要
 ...</p>
   </div>
   <footer class="entry-footer"><span title='2025-01-11 00:00:00 +0000 UTC'>January 11, 2025</span></footer>
-  <a class="entry-link" aria-label="post link to Redis 数据编码 SDS" href="http://localhost:1313/posts/redis-encoding-sds/"></a>
+  <a class="entry-link" aria-label="post link to Redis 数据编码 SDS" href="http://localhost:1313/posts/redis/redis-encoding-sds/"></a>
 </article>
     </main>
     

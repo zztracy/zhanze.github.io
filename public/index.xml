@@ -10,9 +10,9 @@
     <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Java 栈帧</title>
-      <link>http://localhost:1313/posts/java-stack-frame/</link>
+      <link>http://localhost:1313/posts/jvm/java-stack-frame/</link>
       <pubDate>Sat, 08 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/java-stack-frame/</guid>
+      <guid>http://localhost:1313/posts/jvm/java-stack-frame/</guid>
       <description>&lt;h1 id=&#34;heading&#34;&gt;&lt;/h1&gt;
 &lt;h2 id=&#34;定义&#34;&gt;定义&lt;/h2&gt;
 &lt;p&gt;栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。&lt;/p&gt;
@@ -60,9 +60,9 @@
     </item>
     <item>
       <title>Redis 网络模型</title>
-      <link>http://localhost:1313/posts/redis-network-model/redis-network-model/</link>
+      <link>http://localhost:1313/posts/redis/redis-network-model/redis-network-model/</link>
       <pubDate>Fri, 07 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/redis-network-model/redis-network-model/</guid>
+      <guid>http://localhost:1313/posts/redis/redis-network-model/redis-network-model/</guid>
       <description>&lt;h1 id=&#34;redis-网络模型&#34;&gt;Redis 网络模型&lt;/h1&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&#34;&gt;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;1-redis-网络模型&#34;&gt;1 Redis 网络模型&lt;/h1&gt;
@@ -80,10 +80,130 @@
 &lt;/ol&gt;</description>
     </item>
     <item>
+      <title>Redis 数据编码 Dict</title>
+      <link>http://localhost:1313/posts/redis/redis-encoding-dict/</link>
+      <pubDate>Mon, 13 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-dict/</guid>
+      <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
+&lt;p&gt;在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。&lt;/p&gt;
+&lt;h1 id=&#34;dict的数据结构&#34;&gt;Dict的数据结构&lt;/h1&gt;
+&lt;p&gt;Dict由三部分组成：&lt;/p&gt;
+&lt;ol&gt;
+&lt;li&gt;哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针&lt;/li&gt;
+&lt;li&gt;哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息&lt;/li&gt;
+&lt;li&gt;字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash&lt;/li&gt;
+&lt;/ol&gt;
+&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# dict.h
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dictEntry {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;key; &lt;span style=&#34;color:#75715e&#34;&gt;// 键
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;union&lt;/span&gt; {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;val;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		&lt;span style=&#34;color:#66d9ef&#34;&gt;uint64_t&lt;/span&gt; u64;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		&lt;span style=&#34;color:#66d9ef&#34;&gt;int64_t&lt;/span&gt; s64;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;		&lt;span style=&#34;color:#66d9ef&#34;&gt;double&lt;/span&gt; d;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	} v;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	&lt;span style=&#34;color:#75715e&#34;&gt;// 下一个Entry的指针
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dictEntry &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;next;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;} dictEntry;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;# dict.h
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dictht {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#75715e&#34;&gt;// 哈希表数组，每个元素都是指向 dictEntry 的指针
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	dictEntry &lt;span style=&#34;color:#f92672&#34;&gt;**&lt;/span&gt;table;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#75715e&#34;&gt;// 哈希表的大小，即table 数组的长度
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; size;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#75715e&#34;&gt;// 哈希表大小掩码，用于计算索引，值为 size-1
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; sizemark;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;  &lt;span style=&#34;color:#75715e&#34;&gt;// 已使用的哈希表节点数量
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;unsigned&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; used;
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;} dictht;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;div class=&#34;highlight&#34;&gt;&lt;pre tabindex=&#34;0&#34; style=&#34;color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;&#34;&gt;&lt;code class=&#34;language-c&#34; data-lang=&#34;c&#34;&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;// dict.h
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;&lt;span style=&#34;color:#66d9ef&#34;&gt;typedef&lt;/span&gt; &lt;span style=&#34;color:#66d9ef&#34;&gt;struct&lt;/span&gt; dict {
+&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;	dictType &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;type; &lt;span style=&#34;color:#75715e&#34;&gt;// dict类型，内置不同的hash函数
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;void&lt;/span&gt; &lt;span style=&#34;color:#f92672&#34;&gt;*&lt;/span&gt;privadata; &lt;span style=&#34;color:#75715e&#34;&gt;// 私有数据，在做特殊hash运行的时候用
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	dictht ht[&lt;span style=&#34;color:#ae81ff&#34;&gt;2&lt;/span&gt;]; &lt;span style=&#34;color:#75715e&#34;&gt;// 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;long&lt;/span&gt; rehashidx; &lt;span style=&#34;color:#75715e&#34;&gt;// rehash的进度，-1标识未执行
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;	&lt;span style=&#34;color:#66d9ef&#34;&gt;int16_t&lt;/span&gt; pausereshah; &lt;span style=&#34;color:#75715e&#34;&gt;// rehash是否暂停，1为暂停，0为继续
+&lt;/span&gt;&lt;/span&gt;&lt;/span&gt;&lt;span style=&#34;display:flex;&#34;&gt;&lt;span&gt;&lt;span style=&#34;color:#75715e&#34;&gt;&lt;/span&gt;} dict;
+&lt;/span&gt;&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;h1 id=&#34;2-dict的扩容&#34;&gt;2 Dict的扩容&lt;/h1&gt;
+&lt;p&gt;Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。
+Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容&lt;/p&gt;</description>
+    </item>
+    <item>
+      <title>Redis 数据编码 ZipList</title>
+      <link>http://localhost:1313/posts/redis/redis-encoding-ziplist/</link>
+      <pubDate>Sun, 12 Jan 2025 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-ziplist/</guid>
+      <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
+&lt;p&gt;ZipList 压缩列表。采用了紧凑的数据结构。
+ZipList是一种特殊的“双端链表”，由一系列的特殊编码的连续内存块组成。可以在任意一段进行push/pop操作，并且该操作的时间复杂度是O(1)。
+如果采用传统的链表方式存储数据的话，单单是一个指针就需要 8 个字节的内存，双端链表的每个节点都需要 2 * 8 个字节的指针来实现。而且链表所占的内存空间不连续，容易造成内存碎片化。&lt;/p&gt;
+&lt;h1 id=&#34;2-ziplist-的结构&#34;&gt;2 ZipList 的结构&lt;/h1&gt;
+&lt;ul&gt;
+&lt;li&gt;zlbytes 表示 ziplist 的总字节数&lt;/li&gt;
+&lt;li&gt;zltail 表示最后一个节点与 ziplist 起始地址之间的偏移量&lt;/li&gt;
+&lt;li&gt;zllen 表示 entry 的节点数量&lt;/li&gt;
+&lt;li&gt;若干个 entry 节点&lt;/li&gt;
+&lt;li&gt;zlend ziplist 的结束表示 0xff&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;![[ziplist 的结构.png]]
+双端链表的固定长度
+zltypes 4bytes
+ztail 4bytes
+zlen 2bytes
+zlend 1byte
+固定需要 11 个字节
+entry 节点固定 需要 2 - 10 个字节，加上存储的数据的内容，最小可以去到 3 个字节&lt;/p&gt;
+&lt;table&gt;
+  &lt;thead&gt;
+      &lt;tr&gt;
+          &lt;th&gt;属性&lt;/th&gt;
+          &lt;th&gt;类型&lt;/th&gt;
+          &lt;th&gt;长度&lt;/th&gt;
+          &lt;th&gt;用途&lt;/th&gt;
+      &lt;/tr&gt;
+  &lt;/thead&gt;
+  &lt;tbody&gt;
+      &lt;tr&gt;
+          &lt;td&gt;zlbytes&lt;/td&gt;
+          &lt;td&gt;unit32_t&lt;/td&gt;
+          &lt;td&gt;4 字节&lt;/td&gt;
+          &lt;td&gt;记录压缩列表占用的字节数，4 个字节能够对4GB 的空间进行寻址了。也就是说理论上一个 ziplist 最大就是 4GB&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;zltail&lt;/td&gt;
+          &lt;td&gt;uint32_t&lt;/td&gt;
+          &lt;td&gt;4 字节&lt;/td&gt;
+          &lt;td&gt;记录压缩列表尾节点距离起始地址有多少字节，通过这个偏移量，能够确定尾节点的地址&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;zlen&lt;/td&gt;
+          &lt;td&gt;uint_16&lt;/td&gt;
+          &lt;td&gt;2 字节&lt;/td&gt;
+          &lt;td&gt;记录了压缩列表包含的节点数量。最大值为UINT16_MAX（65534），如果超过这个值，此处会记录为 65535，但是节点的真实数量需要遍历整个压缩列表才能计算得出&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;entry&lt;/td&gt;
+          &lt;td&gt;列表节点&lt;/td&gt;
+          &lt;td&gt;不定&lt;/td&gt;
+          &lt;td&gt;压缩列表包含各个节点，节点的长度由节点保存的内容决定&lt;/td&gt;
+      &lt;/tr&gt;
+      &lt;tr&gt;
+          &lt;td&gt;zlend&lt;/td&gt;
+          &lt;td&gt;uint_8&lt;/td&gt;
+          &lt;td&gt;1 字节&lt;/td&gt;
+          &lt;td&gt;特殊值 0xFF（十进制 255），用于记录压缩列表的末端&lt;/td&gt;
+      &lt;/tr&gt;
+  &lt;/tbody&gt;
+&lt;/table&gt;
+&lt;h1 id=&#34;3-ziplistentry的结构&#34;&gt;3 ZipListEntry的结构&lt;/h1&gt;
+&lt;p&gt;ZipListEntry 中的 Entry 并不像普通链表那样记录前后节点的指针，因为记录两个指针需要占用 16 个字节，浪费内存。而是采用了下面的结构
+previous_entry_length | encoding | content&lt;/p&gt;</description>
+    </item>
+    <item>
       <title>Redis 数据编码 IntSet</title>
-      <link>http://localhost:1313/posts/redis-encoding-intset/</link>
+      <link>http://localhost:1313/posts/redis/redis-encoding-intset/</link>
       <pubDate>Sat, 11 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/redis-encoding-intset/</guid>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-intset/</guid>
       <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
 &lt;p&gt;在 Redis中，IntSet（整数集合）是一种用来保存整数值集合的抽象数据结构，当一个集合只包含整数值元素，并且元素数量不多的时候，Redis 就会用 IntSet 来存储该集合。&lt;/p&gt;
 &lt;h1 id=&#34;intset-的数据结构&#34;&gt;IntSet 的数据结构&lt;/h1&gt;
@@ -102,7 +222,7 @@
 &lt;li&gt;&lt;code&gt;length&lt;/code&gt;：表示IntSet 中实际存储的元素的个数&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;contents&lt;/code&gt;：是一个整数数组，数组中的元素按照从小到大的顺序进行排列，这样可以方便进行二分查找&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img alt=&#34;intset的结构&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/posts/redis-encoding-intset/images/intset%E7%9A%84%E7%BB%93%E6%9E%84.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;intset的结构&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/posts/redis/redis-encoding-intset/images/intset%E7%9A%84%E7%BB%93%E6%9E%84.png&#34;&gt;&lt;/p&gt;
 &lt;h1 id=&#34;intset-的主要特点&#34;&gt;IntSet 的主要特点&lt;/h1&gt;
 &lt;h2 id=&#34;内存紧凑&#34;&gt;内存紧凑&lt;/h2&gt;
 &lt;p&gt;假如 IntSet 的encoding 是 &lt;code&gt;INTSET_ENC_INT16&lt;/code&gt;，那么数组中每个数字占用的大小都是 16 位，两个字节&lt;/p&gt;
@@ -110,9 +230,9 @@
     </item>
     <item>
       <title>Redis 数据编码 SDS</title>
-      <link>http://localhost:1313/posts/redis-encoding-sds/</link>
+      <link>http://localhost:1313/posts/redis/redis-encoding-sds/</link>
       <pubDate>Sat, 11 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>http://localhost:1313/posts/redis-encoding-sds/</guid>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-sds/</guid>
       <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
 &lt;p&gt;我们知道 Redis 是基于 C 语言进行开发的，但是 Redis 字符串底层使用的却不是 C 语言的字符串数据结构，而是自己创建了一种数据结构称为 SDS（Simple Dynamic String，简单动态字符串），这是因为 C 语言的字符串存在许多问题，针对这些问题，Redis 自己定义了 SDS 来解决：&lt;/p&gt;
 &lt;ol&gt;

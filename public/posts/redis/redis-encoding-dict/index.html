@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en" dir="auto">
+
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="robots" content="noindex, nofollow">
+<title>Redis 数据编码 Dict | zztracy blog</title>
+<meta name="keywords" content="">
+<meta name="description" content="概述
+在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。
+Dict的数据结构
+Dict由三部分组成：
+
+哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针
+哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息
+字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash
+
+# dict.h
+typedef struct dictEntry {
+	void *key; // 键
+	union {
+		void *val;
+		uint64_t u64;
+		int64_t s64;
+		double d;
+	} v;
+	// 下一个Entry的指针
+	struct dictEntry *next;
+} dictEntry;
+# dict.h
+typedef struct dictht {
+  // 哈希表数组，每个元素都是指向 dictEntry 的指针
+	dictEntry **table;
+  // 哈希表的大小，即table 数组的长度
+	unsigned long size;
+  // 哈希表大小掩码，用于计算索引，值为 size-1
+	unsigned long sizemark;
+  // 已使用的哈希表节点数量
+	unsigned long used;
+} dictht;
+// dict.h
+typedef struct dict {
+	dictType *type; // dict类型，内置不同的hash函数
+	void *privadata; // 私有数据，在做特殊hash运行的时候用
+	dictht ht[2]; // 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用
+	long rehashidx; // rehash的进度，-1标识未执行
+	int16_t pausereshah; // rehash是否暂停，1为暂停，0为继续
+} dict;
+2 Dict的扩容
+Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。
+Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容">
+<meta name="author" content="">
+<link rel="canonical" href="http://localhost:1313/posts/redis/redis-encoding-dict/">
+<link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<meta name="theme-color" content="#2e2e33">
+<meta name="msapplication-TileColor" content="#2e2e33">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/redis/redis-encoding-dict/">
+<noscript>
+    <style>
+        #theme-toggle,
+        .top-link {
+            display: none;
+        }
+
+    </style>
+    <style>
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --theme: rgb(29, 30, 32);
+                --entry: rgb(46, 46, 51);
+                --primary: rgb(218, 218, 219);
+                --secondary: rgb(155, 156, 157);
+                --tertiary: rgb(65, 66, 68);
+                --content: rgb(196, 196, 197);
+                --code-block-bg: rgb(46, 46, 51);
+                --code-bg: rgb(55, 56, 62);
+                --border: rgb(51, 51, 51);
+            }
+
+            .list {
+                background: var(--theme);
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-track {
+                background: 0 0;
+            }
+
+            .list:not(.dark)::-webkit-scrollbar-thumb {
+                border-color: var(--theme);
+            }
+        }
+
+    </style>
+</noscript>
+</head>
+
+<body class="" id="top">
+<script>
+    if (localStorage.getItem("pref-theme") === "dark") {
+        document.body.classList.add('dark');
+    } else if (localStorage.getItem("pref-theme") === "light") {
+        document.body.classList.remove('dark')
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        document.body.classList.add('dark');
+    }
+
+</script>
+
+<header class="header">
+    <nav class="nav">
+        <div class="logo">
+            <a href="http://localhost:1313/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
+            <div class="logo-switches">
+                <button id="theme-toggle" accesskey="t" title="(Alt + T)">
+                    <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                    <svg id="sun" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                </button>
+            </div>
+        </div>
+        <ul id="menu">
+            <li>
+                <a href="http://localhost:1313/about/" title="About">
+                    <span>About</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/archives/" title="Archives">
+                    <span>Archives</span>
+                </a>
+            </li>
+            <li>
+                <a href="http://localhost:1313/search/" title="Search (Alt &#43; /)" accesskey=/>
+                    <span>Search</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</header>
+<main class="main">
+
+<article class="post-single">
+  <header class="post-header">
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <h1 class="post-title entry-hint-parent">
+      Redis 数据编码 Dict
+    </h1>
+    <div class="post-meta"><span title='2025-01-13 00:00:00 +0000 UTC'>January 13, 2025</span>
+
+</div>
+  </header> <div class="toc">
+    <details >
+        <summary accesskey="c" title="(Alt + C)">
+            <span class="details">Table of Contents</span>
+        </summary>
+
+        <div class="inner"><ul>
+                <li>
+                    <a href="#%e6%a6%82%e8%bf%b0" aria-label="概述">概述</a></li>
+                <li>
+                    <a href="#dict%e7%9a%84%e6%95%b0%e6%8d%ae%e7%bb%93%e6%9e%84" aria-label="Dict的数据结构">Dict的数据结构</a></li>
+                <li>
+                    <a href="#2-dict%e7%9a%84%e6%89%a9%e5%ae%b9" aria-label="2 Dict的扩容">2 Dict的扩容</a></li>
+                <li>
+                    <a href="#3-dict%e7%9a%84%e7%bc%a9%e5%ae%b9" aria-label="3 Dict的缩容">3 Dict的缩容</a></li>
+                <li>
+                    <a href="#4-%e6%80%bb%e7%bb%93" aria-label="4 总结">4 总结</a>
+                </li>
+            </ul>
+        </div>
+    </details>
+</div>
+
+  <div class="post-content"><h1 id="概述">概述<a hidden class="anchor" aria-hidden="true" href="#概述">#</a></h1>
+<p>在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。</p>
+<h1 id="dict的数据结构">Dict的数据结构<a hidden class="anchor" aria-hidden="true" href="#dict的数据结构">#</a></h1>
+<p>Dict由三部分组成：</p>
+<ol>
+<li>哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针</li>
+<li>哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息</li>
+<li>字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash</li>
+</ol>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e"># dict.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> dictEntry {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>key; <span style="color:#75715e">// 键
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">union</span> {
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>val;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">uint64_t</span> u64;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">int64_t</span> s64;
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">double</span> d;
+</span></span><span style="display:flex;"><span>	} v;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 下一个Entry的指针
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">struct</span> dictEntry <span style="color:#f92672">*</span>next;
+</span></span><span style="display:flex;"><span>} dictEntry;
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e"># dict.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> dictht {
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 哈希表数组，每个元素都是指向 dictEntry 的指针
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	dictEntry <span style="color:#f92672">**</span>table;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 哈希表的大小，即table 数组的长度
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> size;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 哈希表大小掩码，用于计算索引，值为 size-1
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> sizemark;
+</span></span><span style="display:flex;"><span>  <span style="color:#75715e">// 已使用的哈希表节点数量
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> used;
+</span></span><span style="display:flex;"><span>} dictht;
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// dict.h
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">typedef</span> <span style="color:#66d9ef">struct</span> dict {
+</span></span><span style="display:flex;"><span>	dictType <span style="color:#f92672">*</span>type; <span style="color:#75715e">// dict类型，内置不同的hash函数
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">void</span> <span style="color:#f92672">*</span>privadata; <span style="color:#75715e">// 私有数据，在做特殊hash运行的时候用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	dictht ht[<span style="color:#ae81ff">2</span>]; <span style="color:#75715e">// 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">long</span> rehashidx; <span style="color:#75715e">// rehash的进度，-1标识未执行
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">int16_t</span> pausereshah; <span style="color:#75715e">// rehash是否暂停，1为暂停，0为继续
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>} dict;
+</span></span></code></pre></div><h1 id="2-dict的扩容">2 Dict的扩容<a hidden class="anchor" aria-hidden="true" href="#2-dict的扩容">#</a></h1>
+<p>Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。
+Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容</p>
+<ul>
+<li>哈希表的LoadFactor &gt;= 1，并且服务器没有执行BGSAVE或者是BGREWRITEAOF 等后台进程</li>
+<li>哈希表的LoadFactor &gt; 5;</li>
+</ul>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">static</span> <span style="color:#66d9ef">int</span> <span style="color:#a6e22e">_dictExpandIfNeeded</span>(dict <span style="color:#f92672">*</span>d) {
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果正在rehash中，返回ok
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">dictisRehashing</span>(d)) <span style="color:#66d9ef">return</span> DICT_OK;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果哈希表为空，则初始化哈希表
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (d<span style="color:#f92672">-&gt;</span>ht[<span style="color:#ae81ff">0</span>].size <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>) <span style="color:#66d9ef">return</span> <span style="color:#a6e22e">dictExpand</span>(d, DICT_HT_INITIAL_SIZE)
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果哈希表的用量大于哈希表的大小并且 （dict_can_resize || 负载因子 5）进行扩容
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#75715e">// dict_can_resize表示当前没有进行bgrewrite等消耗cpu的操作
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (d<span style="color:#f92672">-&gt;</span>ht[<span style="color:#ae81ff">0</span>].used <span style="color:#f92672">&gt;=</span> d<span style="color:#f92672">-&gt;</span>ht[<span style="color:#ae81ff">0</span>].size <span style="color:#f92672">&amp;&amp;</span>
+</span></span><span style="display:flex;"><span>	(dict_can_resize <span style="color:#f92672">||</span> d<span style="color:#f92672">-&gt;</span>ht[<span style="color:#ae81ff">0</span>].used<span style="color:#f92672">/</span>d<span style="color:#f92672">-&gt;</span>ht[<span style="color:#ae81ff">0</span>].size <span style="color:#f92672">&gt;</span> dict_force_resize_ratio)) {
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e">// 扩容大小为used + 1，底层会对扩容大小做判断，实际上找的是第一个大小大于等于 used+1 2 2^n
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>		<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">dictExpand</span>(d, d<span style="color:#f92672">-&gt;</span>ht[<span style="color:#ae81ff">0</span>].used <span style="color:#f92672">+</span> <span style="color:#ae81ff">1</span>);
+</span></span><span style="display:flex;"><span>	}
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">return</span> DICT_OK;
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><h1 id="3-dict的缩容">3 Dict的缩容<a hidden class="anchor" aria-hidden="true" href="#3-dict的缩容">#</a></h1>
+<p>Dict除了扩容以外，每次删除元素的时候，也会对负载因子做检查，当LoadFactor &lt; 0.1的时候，会做哈希表收缩
+Dict删除元素</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// t_hash.c # hashTypeDeleted()
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">dictDelete</span>((dict<span style="color:#f92672">*</span>)o<span style="color:#f92672">-&gt;</span>ptr, field) <span style="color:#f92672">==</span> C_OK) {
+</span></span><span style="display:flex;"><span>	deleted <span style="color:#f92672">=</span> <span style="color:#ae81ff">1</span>;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 删除成功后，检查是否需要重置Dict的大小，如果需要则调用dictResize方法进行重置
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (<span style="color:#a6e22e">htNeedsResize</span>(o<span style="color:#f92672">-&gt;</span>ptr)) <span style="color:#a6e22e">dictResize</span>(o<span style="color:#f92672">-&gt;</span>ptr);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">dictResize</span>(dict <span style="color:#f92672">*</span>d) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">unsigned</span> <span style="color:#66d9ef">long</span> minimal;
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">if</span> (<span style="color:#f92672">!</span>dict_can_resize <span style="color:#f92672">||</span> <span style="color:#a6e22e">dictIsRehashing</span>(d))
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> DICT_ERR;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 初始化minimal的值为哈希表的使用量
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	minimal <span style="color:#f92672">=</span> d<span style="color:#f92672">-&gt;</span>ht[<span style="color:#ae81ff">0</span>].used;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 如果minimal比初始化容量还小
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">if</span> (minimal <span style="color:#f92672">&lt;</span>DICT_HT_INITAL_SIZE)
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 将minimal复制为初始化大小
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	minimal <span style="color:#f92672">=</span> DICT_HT_INITIAL_SIZE;
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// 调用dictExpand方法，底层执行的时候是第一个大于等于minimal的2^n
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">return</span> <span style="color:#a6e22e">dictExpand</span>(d, minimal);
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-c" data-lang="c"><span style="display:flex;"><span><span style="color:#75715e">// server.c
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span><span style="color:#66d9ef">int</span> <span style="color:#a6e22e">htNeedsResize</span>(dict <span style="color:#f92672">*</span>dict) {
+</span></span><span style="display:flex;"><span>	<span style="color:#66d9ef">long</span> <span style="color:#66d9ef">long</span> size, used;
+</span></span><span style="display:flex;"><span>	size <span style="color:#f92672">=</span> <span style="color:#a6e22e">dictSlots</span>(dict);
+</span></span><span style="display:flex;"><span>	used <span style="color:#f92672">=</span> <span style="color:#a6e22e">dictSize</span>(dict);
+</span></span><span style="display:flex;"><span>	<span style="color:#75715e">// size &gt; 4 并且负载因子低于0.1的时候需要进行缩容
+</span></span></span><span style="display:flex;"><span><span style="color:#75715e"></span>	<span style="color:#66d9ef">return</span> (size <span style="color:#f92672">&gt;</span> DICT_HT_INITIAL_SIZE <span style="color:#f92672">&amp;&amp;</span> (used <span style="color:#f92672">*</span> <span style="color:#ae81ff">100</span><span style="color:#f92672">/</span>size <span style="color:#f92672">&lt;</span> HASHTABLE_MIN_FILL));
+</span></span><span style="display:flex;"><span>}
+</span></span></code></pre></div><p>不管是扩容还是收缩，必定会创建新的哈希表，导致哈希表的size和sizemask会发生变化，而key的查询与sizemask无关。因此必须对哈希表中的每一个key重新计算索引，插入新的哈希表，这个过程称为rehash</p>
+<ol>
+<li>计算新hash的realSize，值取决于当前要做的是扩容还是收缩
+<ul>
+<li>如果是扩容，则size为第一个大于dict.ht[0].used + 1 的2*n</li>
+<li>如果是收缩，则新size为第一个大于等于dict.ht[0].used 的 2*n(不得小于4)</li>
+</ul>
+</li>
+<li>按照新的realsize申请内存空间，创建dictht，并且赋值给到dict.ht[1]</li>
+<li>设置dict.rehashidx = 0，标志开始rehash</li>
+<li>每次执行增删改查操作的时候都对哈希表的一个角标对应的链表的元素进行rehash，然后rehashindex++，直到将所有的数据都rehash完成。这个操作是迁移！！！！不是复制！！！</li>
+<li>将dict.ht[1]赋值给到dict.ht[0]，给dict.ht[1]初始化为空哈希表，释放原来dict.ht[0]的内存</li>
+</ol>
+<h1 id="4-总结">4 总结<a hidden class="anchor" aria-hidden="true" href="#4-总结">#</a></h1>
+<p>Dict的结构</p>
+<ul>
+<li>类似Java的HashTable，底层是数组加链表来解决哈希冲突</li>
+<li>Dict包含两个哈希表，ht[0]平常用，ht[1]用来rehash
+Dict的伸缩</li>
+<li>当LoadFactor大于5或者LoadFactor大于1并且没有子进程任务时，Dict扩容</li>
+<li>当LoadFactor小于0.1的时候，Dict收缩</li>
+<li>扩容大小为第一个大于等于used + 1的2*n</li>
+<li>缩容大小为第一个大于等于used的2*n</li>
+<li>Dict采用渐进式rehash，每次访问Dict时执行一次rehash</li>
+<li>rehash时ht[0]只减不增加，新增操作只在ht[1]进行，其他操作在两个哈希表进行</li>
+</ul>
+
+
+  </div>
+
+  <footer class="post-footer">
+    <ul class="post-tags">
+    </ul>
+  </footer>
+</article>
+    </main>
+    
+<footer class="footer">
+        <span>&copy; 2025 <a href="http://localhost:1313/">zztracy blog</a></span> · 
+
+    <span>
+        Powered by
+        <a href="https://gohugo.io/" rel="noopener noreferrer" target="_blank">Hugo</a> &
+        <a href="https://github.com/adityatelange/hugo-PaperMod/" rel="noopener" target="_blank">PaperMod</a>
+    </span>
+</footer>
+<a href="#top" aria-label="go to top" title="Go to Top (Alt + G)" class="top-link" id="top-link" accesskey="g">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 6" fill="currentColor">
+        <path d="M12 6H0l6-6z" />
+    </svg>
+</a>
+
+<script>
+    let menu = document.getElementById('menu')
+    if (menu) {
+        menu.scrollLeft = localStorage.getItem("menu-scroll-position");
+        menu.onscroll = function () {
+            localStorage.setItem("menu-scroll-position", menu.scrollLeft);
+        }
+    }
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener("click", function (e) {
+            e.preventDefault();
+            var id = this.getAttribute("href").substr(1);
+            if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView({
+                    behavior: "smooth"
+                });
+            } else {
+                document.querySelector(`[id='${decodeURIComponent(id)}']`).scrollIntoView();
+            }
+            if (id === "top") {
+                history.replaceState(null, null, " ");
+            } else {
+                history.pushState(null, null, `#${id}`);
+            }
+        });
+    });
+
+</script>
+<script>
+    var mybutton = document.getElementById("top-link");
+    window.onscroll = function () {
+        if (document.body.scrollTop > 800 || document.documentElement.scrollTop > 800) {
+            mybutton.style.visibility = "visible";
+            mybutton.style.opacity = "1";
+        } else {
+            mybutton.style.visibility = "hidden";
+            mybutton.style.opacity = "0";
+        }
+    };
+
+</script>
+<script>
+    document.getElementById("theme-toggle").addEventListener("click", () => {
+        if (document.body.className.includes("dark")) {
+            document.body.classList.remove('dark');
+            localStorage.setItem("pref-theme", 'light');
+        } else {
+            document.body.classList.add('dark');
+            localStorage.setItem("pref-theme", 'dark');
+        }
+    })
+
+</script>
+</body>
+
+</html>
