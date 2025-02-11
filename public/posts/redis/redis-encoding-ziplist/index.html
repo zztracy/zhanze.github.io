@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto">
 
-<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
+<head><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="noindex, nofollow">
+<meta name="robots" content="index, follow">
 <title>Redis 数据编码 ZipList | zztracy blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="概述
@@ -73,16 +73,16 @@ entry 节点固定 需要 2 - 10 个字节，加上存储的数据的内容，�
 ZipListEntry 中的 Entry 并不像普通链表那样记录前后节点的指针，因为记录两个指针需要占用 16 个字节，浪费内存。而是采用了下面的结构
 previous_entry_length | encoding | content">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/redis/redis-encoding-ziplist/">
+<link rel="canonical" href="https://zztracy.github.io/posts/redis/redis-encoding-ziplist/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
-<link rel="icon" href="http://localhost:1313/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
-<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
-<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
+<link rel="icon" href="https://zztracy.github.io/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="https://zztracy.github.io/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="https://zztracy.github.io/favicon-32x32.png">
+<link rel="apple-touch-icon" href="https://zztracy.github.io/apple-touch-icon.png">
+<link rel="mask-icon" href="https://zztracy.github.io/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/redis/redis-encoding-ziplist/">
+<link rel="alternate" hreflang="en" href="https://zztracy.github.io/posts/redis/redis-encoding-ziplist/">
 <noscript>
     <style>
         #theme-toggle,
@@ -119,7 +119,135 @@ previous_entry_length | encoding | content">
         }
 
     </style>
-</noscript>
+</noscript><meta property="og:url" content="https://zztracy.github.io/posts/redis/redis-encoding-ziplist/">
+  <meta property="og:site_name" content="zztracy blog">
+  <meta property="og:title" content="Redis 数据编码 ZipList">
+  <meta property="og:description" content="概述 ZipList 压缩列表。采用了紧凑的数据结构。 ZipList是一种特殊的“双端链表”，由一系列的特殊编码的连续内存块组成。可以在任意一段进行push/pop操作，并且该操作的时间复杂度是O(1)。 如果采用传统的链表方式存储数据的话，单单是一个指针就需要 8 个字节的内存，双端链表的每个节点都需要 2 * 8 个字节的指针来实现。而且链表所占的内存空间不连续，容易造成内存碎片化。
+2 ZipList 的结构 zlbytes 表示 ziplist 的总字节数 zltail 表示最后一个节点与 ziplist 起始地址之间的偏移量 zllen 表示 entry 的节点数量 若干个 entry 节点 zlend ziplist 的结束表示 0xff ![[ziplist 的结构.png]] 双端链表的固定长度 zltypes 4bytes ztail 4bytes zlen 2bytes zlend 1byte 固定需要 11 个字节 entry 节点固定 需要 2 - 10 个字节，加上存储的数据的内容，最小可以去到 3 个字节
+属性 类型 长度 用途 zlbytes unit32_t 4 字节 记录压缩列表占用的字节数，4 个字节能够对4GB 的空间进行寻址了。也就是说理论上一个 ziplist 最大就是 4GB zltail uint32_t 4 字节 记录压缩列表尾节点距离起始地址有多少字节，通过这个偏移量，能够确定尾节点的地址 zlen uint_16 2 字节 记录了压缩列表包含的节点数量。最大值为UINT16_MAX（65534），如果超过这个值，此处会记录为 65535，但是节点的真实数量需要遍历整个压缩列表才能计算得出 entry 列表节点 不定 压缩列表包含各个节点，节点的长度由节点保存的内容决定 zlend uint_8 1 字节 特殊值 0xFF（十进制 255），用于记录压缩列表的末端 3 ZipListEntry的结构 ZipListEntry 中的 Entry 并不像普通链表那样记录前后节点的指针，因为记录两个指针需要占用 16 个字节，浪费内存。而是采用了下面的结构 previous_entry_length | encoding | content">
+  <meta property="og:locale" content="en-us">
+  <meta property="og:type" content="article">
+    <meta property="article:section" content="posts">
+    <meta property="article:published_time" content="2025-01-12T00:00:00+00:00">
+    <meta property="article:modified_time" content="2025-01-12T00:00:00+00:00">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Redis 数据编码 ZipList">
+<meta name="twitter:description" content="概述
+ZipList 压缩列表。采用了紧凑的数据结构。
+ZipList是一种特殊的“双端链表”，由一系列的特殊编码的连续内存块组成。可以在任意一段进行push/pop操作，并且该操作的时间复杂度是O(1)。
+如果采用传统的链表方式存储数据的话，单单是一个指针就需要 8 个字节的内存，双端链表的每个节点都需要 2 * 8 个字节的指针来实现。而且链表所占的内存空间不连续，容易造成内存碎片化。
+2 ZipList 的结构
+
+zlbytes 表示 ziplist 的总字节数
+zltail 表示最后一个节点与 ziplist 起始地址之间的偏移量
+zllen 表示 entry 的节点数量
+若干个 entry 节点
+zlend ziplist 的结束表示 0xff
+
+![[ziplist 的结构.png]]
+双端链表的固定长度
+zltypes 4bytes
+ztail 4bytes
+zlen 2bytes
+zlend 1byte
+固定需要 11 个字节
+entry 节点固定 需要 2 - 10 个字节，加上存储的数据的内容，最小可以去到 3 个字节
+
+  
+      
+          属性
+          类型
+          长度
+          用途
+      
+  
+  
+      
+          zlbytes
+          unit32_t
+          4 字节
+          记录压缩列表占用的字节数，4 个字节能够对4GB 的空间进行寻址了。也就是说理论上一个 ziplist 最大就是 4GB
+      
+      
+          zltail
+          uint32_t
+          4 字节
+          记录压缩列表尾节点距离起始地址有多少字节，通过这个偏移量，能够确定尾节点的地址
+      
+      
+          zlen
+          uint_16
+          2 字节
+          记录了压缩列表包含的节点数量。最大值为UINT16_MAX（65534），如果超过这个值，此处会记录为 65535，但是节点的真实数量需要遍历整个压缩列表才能计算得出
+      
+      
+          entry
+          列表节点
+          不定
+          压缩列表包含各个节点，节点的长度由节点保存的内容决定
+      
+      
+          zlend
+          uint_8
+          1 字节
+          特殊值 0xFF（十进制 255），用于记录压缩列表的末端
+      
+  
+
+3 ZipListEntry的结构
+ZipListEntry 中的 Entry 并不像普通链表那样记录前后节点的指针，因为记录两个指针需要占用 16 个字节，浪费内存。而是采用了下面的结构
+previous_entry_length | encoding | content">
+
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position":  1 ,
+      "name": "Posts",
+      "item": "https://zztracy.github.io/posts/"
+    }, 
+    {
+      "@type": "ListItem",
+      "position":  2 ,
+      "name": "Redis 数据编码 ZipList",
+      "item": "https://zztracy.github.io/posts/redis/redis-encoding-ziplist/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BlogPosting",
+  "headline": "Redis 数据编码 ZipList",
+  "name": "Redis 数据编码 ZipList",
+  "description": "概述 ZipList 压缩列表。采用了紧凑的数据结构。 ZipList是一种特殊的“双端链表”，由一系列的特殊编码的连续内存块组成。可以在任意一段进行push/pop操作，并且该操作的时间复杂度是O(1)。 如果采用传统的链表方式存储数据的话，单单是一个指针就需要 8 个字节的内存，双端链表的每个节点都需要 2 * 8 个字节的指针来实现。而且链表所占的内存空间不连续，容易造成内存碎片化。\n2 ZipList 的结构 zlbytes 表示 ziplist 的总字节数 zltail 表示最后一个节点与 ziplist 起始地址之间的偏移量 zllen 表示 entry 的节点数量 若干个 entry 节点 zlend ziplist 的结束表示 0xff ![[ziplist 的结构.png]] 双端链表的固定长度 zltypes 4bytes ztail 4bytes zlen 2bytes zlend 1byte 固定需要 11 个字节 entry 节点固定 需要 2 - 10 个字节，加上存储的数据的内容，最小可以去到 3 个字节\n属性 类型 长度 用途 zlbytes unit32_t 4 字节 记录压缩列表占用的字节数，4 个字节能够对4GB 的空间进行寻址了。也就是说理论上一个 ziplist 最大就是 4GB zltail uint32_t 4 字节 记录压缩列表尾节点距离起始地址有多少字节，通过这个偏移量，能够确定尾节点的地址 zlen uint_16 2 字节 记录了压缩列表包含的节点数量。最大值为UINT16_MAX（65534），如果超过这个值，此处会记录为 65535，但是节点的真实数量需要遍历整个压缩列表才能计算得出 entry 列表节点 不定 压缩列表包含各个节点，节点的长度由节点保存的内容决定 zlend uint_8 1 字节 特殊值 0xFF（十进制 255），用于记录压缩列表的末端 3 ZipListEntry的结构 ZipListEntry 中的 Entry 并不像普通链表那样记录前后节点的指针，因为记录两个指针需要占用 16 个字节，浪费内存。而是采用了下面的结构 previous_entry_length | encoding | content\n",
+  "keywords": [
+    
+  ],
+  "articleBody": "概述 ZipList 压缩列表。采用了紧凑的数据结构。 ZipList是一种特殊的“双端链表”，由一系列的特殊编码的连续内存块组成。可以在任意一段进行push/pop操作，并且该操作的时间复杂度是O(1)。 如果采用传统的链表方式存储数据的话，单单是一个指针就需要 8 个字节的内存，双端链表的每个节点都需要 2 * 8 个字节的指针来实现。而且链表所占的内存空间不连续，容易造成内存碎片化。\n2 ZipList 的结构 zlbytes 表示 ziplist 的总字节数 zltail 表示最后一个节点与 ziplist 起始地址之间的偏移量 zllen 表示 entry 的节点数量 若干个 entry 节点 zlend ziplist 的结束表示 0xff ![[ziplist 的结构.png]] 双端链表的固定长度 zltypes 4bytes ztail 4bytes zlen 2bytes zlend 1byte 固定需要 11 个字节 entry 节点固定 需要 2 - 10 个字节，加上存储的数据的内容，最小可以去到 3 个字节\n属性 类型 长度 用途 zlbytes unit32_t 4 字节 记录压缩列表占用的字节数，4 个字节能够对4GB 的空间进行寻址了。也就是说理论上一个 ziplist 最大就是 4GB zltail uint32_t 4 字节 记录压缩列表尾节点距离起始地址有多少字节，通过这个偏移量，能够确定尾节点的地址 zlen uint_16 2 字节 记录了压缩列表包含的节点数量。最大值为UINT16_MAX（65534），如果超过这个值，此处会记录为 65535，但是节点的真实数量需要遍历整个压缩列表才能计算得出 entry 列表节点 不定 压缩列表包含各个节点，节点的长度由节点保存的内容决定 zlend uint_8 1 字节 特殊值 0xFF（十进制 255），用于记录压缩列表的末端 3 ZipListEntry的结构 ZipListEntry 中的 Entry 并不像普通链表那样记录前后节点的指针，因为记录两个指针需要占用 16 个字节，浪费内存。而是采用了下面的结构 previous_entry_length | encoding | content\nprevious_entry_length：前一节点的长度，占 1 个或者 5 个字节 如果前一个节点的长度小于 254 字节，则采用 1 个字节来保存这个长度值 如果前一个节点的长度大于 254 字节，则采用 5 个字节来保存这个长度值，第一个字节为0xfe，后面四个字节才是真实的长度数据 encoding：编码属性，记录 content 的数据类型（字符串还是整数）以及长度，占用 1 个、2 个或者 5 个字节 contents：负责保存节点的数据，可以是字符串或者整数 zipListEnrty 的 encoding 编码分为字符串和整数两种 字符串：如果 encoding 是以\"00\" “01” 或者“10”开头的，则证明 content 是字符串\n编码 编码长度 字符串大小 | 00pppppp | 1 byte \u003c= 63 bytes | 01pppppp | qqqqqqqq | 2 byte \u003c= 16383 bytes | 10000000 | qqqqqqqq | rrrrrrrr | ssssssss | tttttttt | 5 byte \u003c= 4294967295 bytes 假设现在往一个空的 ziplist 存储字符串 ab、字符串 bc 那么redis 会这么存储 ab： 前一个节点的长度为 0，二进制为 0000 0000，16 进制为 0x00，一个字节 编码，ab 为字符串并且ab 的长度为 2 个字节，因此编码的前两位为 00，补全之后为 0000 0010，16 进制为 0x02，一个字节 内容：a在 utf-8 字符集中的二进制表示为 0110 0001, 16进制为 0x61；b 为 0110 0010, 16进制为 0x62 因此存储 ab 的 entry 在内存中存储为，｜0000 0000 ｜ 0000 0010 ｜ 0110 0001 ｜ 0110 0010｜ 用 16 进制表示则为 0x00 0x02 0x61 0x62 bc：\n前一个节点的长度为 4 个字节，二进制为 0000 0100，16 进制为 0x04 编码，bc 为字符串并且 bc 的长度为 2 个字节，因此编码的前两位为 00，补全之后为 0000 0010, 16进制为 0x02，一个字节 内容：b 在 utf-8 字符集中的二进制表示为 0110 0010; 16进制为0x62, c为 0110 0011，16 进制为 0x63 因此存储 bc 的 entry 在内存中存储为｜ 0000 0100 ｜0000 0010｜0110 0010｜0110 0011｜，用 16 进制表示则为 0x04 0x20 0x62 0x63 整数：如果 encoding 是 11开始的，则证明content 是整数，且 encoding 固定只占用 1 个字节\n编码 编码长度 整数类型 11000000 1 int16_t(2 bytes) 11010000 1 int32_t(4 bytes) 11100000 1 int64_t(8 bytes) 11110000 1 24位有符号整数（3 bytes) 11111110 1 8 位有符号整数（1bytes） 1111xxxx 1 直接在 xxxx 位置保存数值，范围从0000-1101,减1 后结果为实际值 4 ZipList的连锁更新问题 ZipList 的每个 Entry 都包含 previous_entry_length 来记录上一个节点的大小，长度是1 个或者 5 个字节\n如果前一节点的长度小于 254 字节，则采用1 个字节来保存这个长度值 如果前一节点的长度等于 254 字节，则采用 5 个字节来保存这个长度值，第一个字节为 0xfe，后四个字节才是真实长度数据 如果当中有一个字节的数据更新了，超过 254 个字节，那么下一个节点的 previous_entry_length 无法用一个字节记录前一个节点的长度，根据 ziplist entry 的规则，会升级成 5 个字节来存储前一个节点的长度，然后又导致当前 entry 的长度超过 254 个字节，以此类推，导致连锁的大量在 250-254 字节之间的节点长度连锁变化，产生了连锁更新 ![[ziplist 的连锁更新问题.png]]\n5 ZipList 的优缺点 5.1 优点 内存使用高效：ziplist 采用紧凑的内存布局，将所有元素紧密排列在连续的内存块中，不存在额外的指针开销。这使得在存储小数据的时候，能够显著减少内存碎片化，有效节省内存空间。 缓存友好：由于 zipList 元素存储在连续的内存区域，符合计算机的局部原理。当访问一个元素的时候，相邻元素也可能被加载到 cpu 内存中，从而提高数据的访问速度。 5.2 缺点 插入和删除效率低：在 zipList 中进行插入或者删除操作的时候，可能需要对后续的元素进行内存移动，以保持数据的连续性。特别是在列表中间进行删除或者插入操作时，这种内存移动的开销会更大，时间复杂度为 O（n）。 连锁更新问题：ziplist 中的每个节点都包含一个记录前一个节点长度的字段，当某个节点的长度发生变化的时候，可能会影响到后续节点的这个字段，从而导致一系列的更新操作，即连锁更新。连续更新的时间复杂度高。 ",
+  "wordCount" : "380",
+  "inLanguage": "en",
+  "datePublished": "2025-01-12T00:00:00Z",
+  "dateModified": "2025-01-12T00:00:00Z",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "https://zztracy.github.io/posts/redis/redis-encoding-ziplist/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "zztracy blog",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://zztracy.github.io/favicon.ico"
+    }
+  }
+}
+</script>
 </head>
 
 <body class="" id="top">
@@ -137,7 +265,7 @@ previous_entry_length | encoding | content">
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="http://localhost:1313/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
+            <a href="https://zztracy.github.io/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -163,17 +291,17 @@ previous_entry_length | encoding | content">
         </div>
         <ul id="menu">
             <li>
-                <a href="http://localhost:1313/about/" title="About">
+                <a href="https://zztracy.github.io/about/" title="About">
                     <span>About</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/archives/" title="Archives">
+                <a href="https://zztracy.github.io/archives/" title="Archives">
                     <span>Archives</span>
                 </a>
             </li>
             <li>
-                <a href="http://localhost:1313/search/" title="Search (Alt &#43; /)" accesskey=/>
+                <a href="https://zztracy.github.io/search/" title="Search (Alt &#43; /)" accesskey=/>
                     <span>Search</span>
                 </a>
             </li>
@@ -184,7 +312,7 @@ previous_entry_length | encoding | content">
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="https://zztracy.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://zztracy.github.io/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Redis 数据编码 ZipList
     </h1>
@@ -426,7 +554,7 @@ previous_entry_length | encoding | content</p>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="http://localhost:1313/">zztracy blog</a></span> · 
+        <span>&copy; 2025 <a href="https://zztracy.github.io/">zztracy blog</a></span> · 
 
     <span>
         Powered by
