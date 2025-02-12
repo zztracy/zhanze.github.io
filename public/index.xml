@@ -2,17 +2,17 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
   <channel>
     <title>zztracy blog</title>
-    <link>https://zztracy.github.io/</link>
+    <link>http://localhost:1313/</link>
     <description>Recent content on zztracy blog</description>
     <generator>Hugo -- 0.143.1</generator>
     <language>en-us</language>
     <lastBuildDate>Sat, 08 Feb 2025 00:00:00 +0000</lastBuildDate>
-    <atom:link href="https://zztracy.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <atom:link href="http://localhost:1313/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Java 栈帧</title>
-      <link>https://zztracy.github.io/posts/jvm/java-stack-frame/</link>
+      <link>http://localhost:1313/posts/jvm/java-stack-frame/</link>
       <pubDate>Sat, 08 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/jvm/java-stack-frame/</guid>
+      <guid>http://localhost:1313/posts/jvm/java-stack-frame/</guid>
       <description>&lt;h1 id=&#34;heading&#34;&gt;&lt;/h1&gt;
 &lt;h2 id=&#34;定义&#34;&gt;定义&lt;/h2&gt;
 &lt;p&gt;栈帧是 Java 虚拟机栈中的一个独立单元，每当一个方法被调用时，Java 虚拟机会为该方法创建一个对应的栈帧，并将其压入当前线程的虚拟机栈中。当方法执行完毕后，对应的栈帧会从虚拟机栈中弹出并被销毁。每个线程都有自己独立的虚拟机栈，因此每个线程在执行方法时都会有自己的栈帧序列。&lt;/p&gt;
@@ -37,9 +37,9 @@
     </item>
     <item>
       <title>Redis Network Model</title>
-      <link>https://zztracy.github.io/redis-network-model/</link>
+      <link>http://localhost:1313/redis-network-model/</link>
       <pubDate>Fri, 07 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/redis-network-model/</guid>
+      <guid>http://localhost:1313/redis-network-model/</guid>
       <description>&lt;h1 id=&#34;redis-网络模型&#34;&gt;Redis 网络模型&lt;/h1&gt;
 &lt;p&gt;&lt;a href=&#34;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&#34;&gt;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&lt;/a&gt;&lt;/p&gt;
 &lt;h1 id=&#34;1-redis-网络模型&#34;&gt;1 Redis 网络模型&lt;/h1&gt;
@@ -59,31 +59,10 @@
 &lt;p&gt;![[Multiple threaded model in Redis.png]]&lt;/p&gt;</description>
     </item>
     <item>
-      <title>Redis 网络模型</title>
-      <link>https://zztracy.github.io/posts/redis/redis-network-model/redis-network-model/</link>
-      <pubDate>Fri, 07 Feb 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/redis/redis-network-model/redis-network-model/</guid>
-      <description>&lt;h1 id=&#34;redis-网络模型&#34;&gt;Redis 网络模型&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&#34;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&#34;&gt;https://www.sobyte.net/post/2022-03/redis-multi-threaded-network-model/&lt;/a&gt;&lt;/p&gt;
-&lt;h1 id=&#34;1-redis-网络模型&#34;&gt;1 Redis 网络模型&lt;/h1&gt;
-&lt;h1 id=&#34;2-redis-60-启用了多线程&#34;&gt;2 Redis 6.0 启用了多线程&lt;/h1&gt;
-&lt;p&gt;通过对 Redis 的网络模型进行分析我们可以知道，Redis 网络模型的性能瓶颈在于（1）对客户端 socket 的 IO 解析；（2）对客户端 socket 的 IO 回写数据。 瓶颈都是出现在 IO 上
-因此，Redis 针对（1）客户端命令解析；（2）写响应结果这两个环节采用了多线程进行并发的处理
-过程是这样的&lt;/p&gt;
-&lt;ol&gt;
-&lt;li&gt;在 epoll_wait 的过程中遍历得到待处理的客户端 socket&lt;/li&gt;
-&lt;li&gt;一个客户端 socket 在一次请求中可能会传递多个命令&lt;/li&gt;
-&lt;li&gt;多线程分配一个线程从这个客户端 socket 请求中解析命令，这一个特定线程解析完所有命令后会将结果依次添加到一个全局队列中&lt;/li&gt;
-&lt;li&gt;Redis 主线程从全局队列中依次执行，并且将结果写到 client 的响应缓冲区中&lt;/li&gt;
-&lt;li&gt;Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据
-需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。&lt;/li&gt;
-&lt;/ol&gt;</description>
-    </item>
-    <item>
       <title>Redis 数据编码 Dict</title>
-      <link>https://zztracy.github.io/posts/redis/redis-encoding-dict/</link>
+      <link>http://localhost:1313/posts/redis/redis-encoding-dict/</link>
       <pubDate>Mon, 13 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/redis/redis-encoding-dict/</guid>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-dict/</guid>
       <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
 &lt;p&gt;在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。&lt;/p&gt;
 &lt;h1 id=&#34;dict的数据结构&#34;&gt;Dict的数据结构&lt;/h1&gt;
@@ -130,9 +109,9 @@ Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = use
     </item>
     <item>
       <title>Redis 数据编码 ZipList</title>
-      <link>https://zztracy.github.io/posts/redis/redis-encoding-ziplist/</link>
+      <link>http://localhost:1313/posts/redis/redis-encoding-ziplist/</link>
       <pubDate>Sun, 12 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/redis/redis-encoding-ziplist/</guid>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-ziplist/</guid>
       <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
 &lt;p&gt;ZipList 压缩列表。采用了紧凑的数据结构。
 ZipList是一种特殊的“双端链表”，由一系列的特殊编码的连续内存块组成。可以在任意一段进行push/pop操作，并且该操作的时间复杂度是O(1)。
@@ -201,9 +180,9 @@ previous_entry_length | encoding | content&lt;/p&gt;</description>
     </item>
     <item>
       <title>Redis 数据编码 IntSet</title>
-      <link>https://zztracy.github.io/posts/redis/redis-encoding-intset/</link>
+      <link>http://localhost:1313/posts/redis/redis-encoding-intset/</link>
       <pubDate>Sat, 11 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/redis/redis-encoding-intset/</guid>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-intset/</guid>
       <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
 &lt;p&gt;在 Redis中，IntSet（整数集合）是一种用来保存整数值集合的抽象数据结构，当一个集合只包含整数值元素，并且元素数量不多的时候，Redis 就会用 IntSet 来存储该集合。&lt;/p&gt;
 &lt;h1 id=&#34;intset-的数据结构&#34;&gt;IntSet 的数据结构&lt;/h1&gt;
@@ -222,7 +201,7 @@ previous_entry_length | encoding | content&lt;/p&gt;</description>
 &lt;li&gt;&lt;code&gt;length&lt;/code&gt;：表示IntSet 中实际存储的元素的个数&lt;/li&gt;
 &lt;li&gt;&lt;code&gt;contents&lt;/code&gt;：是一个整数数组，数组中的元素按照从小到大的顺序进行排列，这样可以方便进行二分查找&lt;/li&gt;
 &lt;/ul&gt;
-&lt;p&gt;&lt;img alt=&#34;intset的结构&#34; loading=&#34;lazy&#34; src=&#34;https://zztracy.github.io/posts/redis/redis-encoding-intset/images/intset%E7%9A%84%E7%BB%93%E6%9E%84.png&#34;&gt;&lt;/p&gt;
+&lt;p&gt;&lt;img alt=&#34;intset的结构&#34; loading=&#34;lazy&#34; src=&#34;http://localhost:1313/posts/redis/redis-encoding-intset/images/intset%E7%9A%84%E7%BB%93%E6%9E%84.png&#34;&gt;&lt;/p&gt;
 &lt;h1 id=&#34;intset-的主要特点&#34;&gt;IntSet 的主要特点&lt;/h1&gt;
 &lt;h2 id=&#34;内存紧凑&#34;&gt;内存紧凑&lt;/h2&gt;
 &lt;p&gt;假如 IntSet 的encoding 是 &lt;code&gt;INTSET_ENC_INT16&lt;/code&gt;，那么数组中每个数字占用的大小都是 16 位，两个字节&lt;/p&gt;
@@ -230,9 +209,9 @@ previous_entry_length | encoding | content&lt;/p&gt;</description>
     </item>
     <item>
       <title>Redis 数据编码 SDS</title>
-      <link>https://zztracy.github.io/posts/redis/redis-encoding-sds/</link>
+      <link>http://localhost:1313/posts/redis/redis-encoding-sds/</link>
       <pubDate>Sat, 11 Jan 2025 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/posts/redis/redis-encoding-sds/</guid>
+      <guid>http://localhost:1313/posts/redis/redis-encoding-sds/</guid>
       <description>&lt;h1 id=&#34;概述&#34;&gt;概述&lt;/h1&gt;
 &lt;p&gt;我们知道 Redis 是基于 C 语言进行开发的，但是 Redis 字符串底层使用的却不是 C 语言的字符串数据结构，而是自己创建了一种数据结构称为 SDS（Simple Dynamic String，简单动态字符串），这是因为 C 语言的字符串存在许多问题，针对这些问题，Redis 自己定义了 SDS 来解决：&lt;/p&gt;
 &lt;ol&gt;
@@ -269,9 +248,9 @@ previous_entry_length | encoding | content&lt;/p&gt;</description>
     </item>
     <item>
       <title>About</title>
-      <link>https://zztracy.github.io/about/</link>
+      <link>http://localhost:1313/about/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      <guid>https://zztracy.github.io/about/</guid>
+      <guid>http://localhost:1313/about/</guid>
       <description>&lt;h1 id=&#34;job-experience&#34;&gt;Job Experience&lt;/h1&gt;
 &lt;ul&gt;
 &lt;li&gt;Backend Project Manager @ OHUP | Apr-2024 - Oct-2024&lt;/li&gt;

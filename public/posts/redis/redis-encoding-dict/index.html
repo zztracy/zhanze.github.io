@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" dir="auto">
 
-<head><meta charset="utf-8">
+<head><script src="/livereload.js?mindelay=10&amp;v=2&amp;port=1313&amp;path=livereload" data-no-instant defer></script><meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="robots" content="index, follow">
+<meta name="robots" content="noindex, nofollow">
 <title>Redis 数据编码 Dict | zztracy blog</title>
 <meta name="keywords" content="">
 <meta name="description" content="概述
@@ -51,16 +51,16 @@ typedef struct dict {
 Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。
 Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容">
 <meta name="author" content="">
-<link rel="canonical" href="https://zztracy.github.io/posts/redis/redis-encoding-dict/">
+<link rel="canonical" href="http://localhost:1313/posts/redis/redis-encoding-dict/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
-<link rel="icon" href="https://zztracy.github.io/favicon.ico">
-<link rel="icon" type="image/png" sizes="16x16" href="https://zztracy.github.io/favicon-16x16.png">
-<link rel="icon" type="image/png" sizes="32x32" href="https://zztracy.github.io/favicon-32x32.png">
-<link rel="apple-touch-icon" href="https://zztracy.github.io/apple-touch-icon.png">
-<link rel="mask-icon" href="https://zztracy.github.io/safari-pinned-tab.svg">
+<link rel="icon" href="http://localhost:1313/favicon.ico">
+<link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
+<link rel="icon" type="image/png" sizes="32x32" href="http://localhost:1313/favicon-32x32.png">
+<link rel="apple-touch-icon" href="http://localhost:1313/apple-touch-icon.png">
+<link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="https://zztracy.github.io/posts/redis/redis-encoding-dict/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/redis/redis-encoding-dict/">
 <noscript>
     <style>
         #theme-toggle,
@@ -97,113 +97,7 @@ Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = use
         }
 
     </style>
-</noscript><meta property="og:url" content="https://zztracy.github.io/posts/redis/redis-encoding-dict/">
-  <meta property="og:site_name" content="zztracy blog">
-  <meta property="og:title" content="Redis 数据编码 Dict">
-  <meta property="og:description" content="概述 在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。
-Dict的数据结构 Dict由三部分组成：
-哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针 哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息 字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash # dict.h typedef struct dictEntry { void *key; // 键 union { void *val; uint64_t u64; int64_t s64; double d; } v; // 下一个Entry的指针 struct dictEntry *next; } dictEntry; # dict.h typedef struct dictht { // 哈希表数组，每个元素都是指向 dictEntry 的指针 dictEntry **table; // 哈希表的大小，即table 数组的长度 unsigned long size; // 哈希表大小掩码，用于计算索引，值为 size-1 unsigned long sizemark; // 已使用的哈希表节点数量 unsigned long used; } dictht; // dict.h typedef struct dict { dictType *type; // dict类型，内置不同的hash函数 void *privadata; // 私有数据，在做特殊hash运行的时候用 dictht ht[2]; // 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用 long rehashidx; // rehash的进度，-1标识未执行 int16_t pausereshah; // rehash是否暂停，1为暂停，0为继续 } dict; 2 Dict的扩容 Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。 Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容">
-  <meta property="og:locale" content="en-us">
-  <meta property="og:type" content="article">
-    <meta property="article:section" content="posts">
-    <meta property="article:published_time" content="2025-01-13T00:00:00+00:00">
-    <meta property="article:modified_time" content="2025-01-13T00:00:00+00:00">
-<meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Redis 数据编码 Dict">
-<meta name="twitter:description" content="概述
-在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。
-Dict的数据结构
-Dict由三部分组成：
-
-哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针
-哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息
-字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash
-
-# dict.h
-typedef struct dictEntry {
-	void *key; // 键
-	union {
-		void *val;
-		uint64_t u64;
-		int64_t s64;
-		double d;
-	} v;
-	// 下一个Entry的指针
-	struct dictEntry *next;
-} dictEntry;
-# dict.h
-typedef struct dictht {
-  // 哈希表数组，每个元素都是指向 dictEntry 的指针
-	dictEntry **table;
-  // 哈希表的大小，即table 数组的长度
-	unsigned long size;
-  // 哈希表大小掩码，用于计算索引，值为 size-1
-	unsigned long sizemark;
-  // 已使用的哈希表节点数量
-	unsigned long used;
-} dictht;
-// dict.h
-typedef struct dict {
-	dictType *type; // dict类型，内置不同的hash函数
-	void *privadata; // 私有数据，在做特殊hash运行的时候用
-	dictht ht[2]; // 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用
-	long rehashidx; // rehash的进度，-1标识未执行
-	int16_t pausereshah; // rehash是否暂停，1为暂停，0为继续
-} dict;
-2 Dict的扩容
-Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。
-Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容">
-
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BreadcrumbList",
-  "itemListElement": [
-    {
-      "@type": "ListItem",
-      "position":  1 ,
-      "name": "Posts",
-      "item": "https://zztracy.github.io/posts/"
-    }, 
-    {
-      "@type": "ListItem",
-      "position":  2 ,
-      "name": "Redis 数据编码 Dict",
-      "item": "https://zztracy.github.io/posts/redis/redis-encoding-dict/"
-    }
-  ]
-}
-</script>
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "BlogPosting",
-  "headline": "Redis 数据编码 Dict",
-  "name": "Redis 数据编码 Dict",
-  "description": "概述 在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。\nDict的数据结构 Dict由三部分组成：\n哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针 哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息 字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash # dict.h typedef struct dictEntry { void *key; // 键 union { void *val; uint64_t u64; int64_t s64; double d; } v; // 下一个Entry的指针 struct dictEntry *next; } dictEntry; # dict.h typedef struct dictht { // 哈希表数组，每个元素都是指向 dictEntry 的指针 dictEntry **table; // 哈希表的大小，即table 数组的长度 unsigned long size; // 哈希表大小掩码，用于计算索引，值为 size-1 unsigned long sizemark; // 已使用的哈希表节点数量 unsigned long used; } dictht; // dict.h typedef struct dict { dictType *type; // dict类型，内置不同的hash函数 void *privadata; // 私有数据，在做特殊hash运行的时候用 dictht ht[2]; // 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用 long rehashidx; // rehash的进度，-1标识未执行 int16_t pausereshah; // rehash是否暂停，1为暂停，0为继续 } dict; 2 Dict的扩容 Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。 Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容\n",
-  "keywords": [
-    
-  ],
-  "articleBody": "概述 在 Redis 中，Dict 是一种核心的数据结构，用于实现键值对（key-value）存储。它是 redis 高效运行的基础之一。在数据库的键空间、Hash 数据类型、有序集合等场景均存在应用。\nDict的数据结构 Dict由三部分组成：\n哈希表节点：dictEntry，表示一个键值对；包含key、value 以及指向下一个节点的指针 哈希表：dictht，包含一个 dictEntry 指针数组，用于存储键值对，以及记录哈希表的大小，已用节点数等信息 字典：dict，包含两个哈希表（ht[0] 和 ht[1]），这样的设计能够支持渐进式 rehash # dict.h typedef struct dictEntry { void *key; // 键 union { void *val; uint64_t u64; int64_t s64; double d; } v; // 下一个Entry的指针 struct dictEntry *next; } dictEntry; # dict.h typedef struct dictht { // 哈希表数组，每个元素都是指向 dictEntry 的指针 dictEntry **table; // 哈希表的大小，即table 数组的长度 unsigned long size; // 哈希表大小掩码，用于计算索引，值为 size-1 unsigned long sizemark; // 已使用的哈希表节点数量 unsigned long used; } dictht; // dict.h typedef struct dict { dictType *type; // dict类型，内置不同的hash函数 void *privadata; // 私有数据，在做特殊hash运行的时候用 dictht ht[2]; // 一个dict包含两个hash表，其中一个是当前数据，另外一个一般为空，rehash的时候使用 long rehashidx; // rehash的进度，-1标识未执行 int16_t pausereshah; // rehash是否暂停，1为暂停，0为继续 } dict; 2 Dict的扩容 Dict中的HashTable就是数组结合单向链表的实践，当集合中元素较多的时候，必然导致哈希冲突增多，链表过长，则查询效率会大大降低。 Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = used/size），满足以下两种情况时会出发哈希表扩容\n哈希表的LoadFactor \u003e= 1，并且服务器没有执行BGSAVE或者是BGREWRITEAOF 等后台进程 哈希表的LoadFactor \u003e 5; static int _dictExpandIfNeeded(dict *d) { // 如果正在rehash中，返回ok if (dictisRehashing(d)) return DICT_OK; // 如果哈希表为空，则初始化哈希表 if (d-\u003eht[0].size == 0) return dictExpand(d, DICT_HT_INITIAL_SIZE) // 如果哈希表的用量大于哈希表的大小并且 （dict_can_resize || 负载因子 5）进行扩容 // dict_can_resize表示当前没有进行bgrewrite等消耗cpu的操作 if (d-\u003eht[0].used \u003e= d-\u003eht[0].size \u0026\u0026 (dict_can_resize || d-\u003eht[0].used/d-\u003eht[0].size \u003e dict_force_resize_ratio)) { // 扩容大小为used + 1，底层会对扩容大小做判断，实际上找的是第一个大小大于等于 used+1 2 2^n return dictExpand(d, d-\u003eht[0].used + 1); } return DICT_OK; } 3 Dict的缩容 Dict除了扩容以外，每次删除元素的时候，也会对负载因子做检查，当LoadFactor \u003c 0.1的时候，会做哈希表收缩 Dict删除元素\n// t_hash.c # hashTypeDeleted() if (dictDelete((dict*)o-\u003eptr, field) == C_OK) { deleted = 1; // 删除成功后，检查是否需要重置Dict的大小，如果需要则调用dictResize方法进行重置 if (htNeedsResize(o-\u003eptr)) dictResize(o-\u003eptr); } int dictResize(dict *d) { unsigned long minimal; if (!dict_can_resize || dictIsRehashing(d)) return DICT_ERR; // 初始化minimal的值为哈希表的使用量 minimal = d-\u003eht[0].used; // 如果minimal比初始化容量还小 if (minimal \u003cDICT_HT_INITAL_SIZE) // 将minimal复制为初始化大小 minimal = DICT_HT_INITIAL_SIZE; // 调用dictExpand方法，底层执行的时候是第一个大于等于minimal的2^n return dictExpand(d, minimal); } // server.c int htNeedsResize(dict *dict) { long long size, used; size = dictSlots(dict); used = dictSize(dict); // size \u003e 4 并且负载因子低于0.1的时候需要进行缩容 return (size \u003e DICT_HT_INITIAL_SIZE \u0026\u0026 (used * 100/size \u003c HASHTABLE_MIN_FILL)); } 不管是扩容还是收缩，必定会创建新的哈希表，导致哈希表的size和sizemask会发生变化，而key的查询与sizemask无关。因此必须对哈希表中的每一个key重新计算索引，插入新的哈希表，这个过程称为rehash\n计算新hash的realSize，值取决于当前要做的是扩容还是收缩 如果是扩容，则size为第一个大于dict.ht[0].used + 1 的2*n 如果是收缩，则新size为第一个大于等于dict.ht[0].used 的 2*n(不得小于4) 按照新的realsize申请内存空间，创建dictht，并且赋值给到dict.ht[1] 设置dict.rehashidx = 0，标志开始rehash 每次执行增删改查操作的时候都对哈希表的一个角标对应的链表的元素进行rehash，然后rehashindex++，直到将所有的数据都rehash完成。这个操作是迁移！！！！不是复制！！！ 将dict.ht[1]赋值给到dict.ht[0]，给dict.ht[1]初始化为空哈希表，释放原来dict.ht[0]的内存 4 总结 Dict的结构\n类似Java的HashTable，底层是数组加链表来解决哈希冲突 Dict包含两个哈希表，ht[0]平常用，ht[1]用来rehash Dict的伸缩 当LoadFactor大于5或者LoadFactor大于1并且没有子进程任务时，Dict扩容 当LoadFactor小于0.1的时候，Dict收缩 扩容大小为第一个大于等于used + 1的2*n 缩容大小为第一个大于等于used的2*n Dict采用渐进式rehash，每次访问Dict时执行一次rehash rehash时ht[0]只减不增加，新增操作只在ht[1]进行，其他操作在两个哈希表进行 ",
-  "wordCount" : "295",
-  "inLanguage": "en",
-  "datePublished": "2025-01-13T00:00:00Z",
-  "dateModified": "2025-01-13T00:00:00Z",
-  "mainEntityOfPage": {
-    "@type": "WebPage",
-    "@id": "https://zztracy.github.io/posts/redis/redis-encoding-dict/"
-  },
-  "publisher": {
-    "@type": "Organization",
-    "name": "zztracy blog",
-    "logo": {
-      "@type": "ImageObject",
-      "url": "https://zztracy.github.io/favicon.ico"
-    }
-  }
-}
-</script>
+</noscript>
 </head>
 
 <body class="" id="top">
@@ -221,7 +115,7 @@ Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = use
 <header class="header">
     <nav class="nav">
         <div class="logo">
-            <a href="https://zztracy.github.io/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
+            <a href="http://localhost:1313/" accesskey="h" title="zztracy blog (Alt + H)">zztracy blog</a>
             <div class="logo-switches">
                 <button id="theme-toggle" accesskey="t" title="(Alt + T)">
                     <svg id="moon" xmlns="http://www.w3.org/2000/svg" width="24" height="18" viewBox="0 0 24 24"
@@ -247,17 +141,17 @@ Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = use
         </div>
         <ul id="menu">
             <li>
-                <a href="https://zztracy.github.io/about/" title="About">
+                <a href="http://localhost:1313/about/" title="About">
                     <span>About</span>
                 </a>
             </li>
             <li>
-                <a href="https://zztracy.github.io/archives/" title="Archives">
+                <a href="http://localhost:1313/archives/" title="Archives">
                     <span>Archives</span>
                 </a>
             </li>
             <li>
-                <a href="https://zztracy.github.io/search/" title="Search (Alt &#43; /)" accesskey=/>
+                <a href="http://localhost:1313/search/" title="Search (Alt &#43; /)" accesskey=/>
                     <span>Search</span>
                 </a>
             </li>
@@ -268,7 +162,7 @@ Dict在每次新增键值对的时候都会检查负载因子（LoadFactor = use
 
 <article class="post-single">
   <header class="post-header">
-    <div class="breadcrumbs"><a href="https://zztracy.github.io/">Home</a>&nbsp;»&nbsp;<a href="https://zztracy.github.io/posts/">Posts</a></div>
+    <div class="breadcrumbs"><a href="http://localhost:1313/">Home</a>&nbsp;»&nbsp;<a href="http://localhost:1313/posts/">Posts</a></div>
     <h1 class="post-title entry-hint-parent">
       Redis 数据编码 Dict
     </h1>
@@ -427,7 +321,7 @@ Dict的伸缩</li>
     </main>
     
 <footer class="footer">
-        <span>&copy; 2025 <a href="https://zztracy.github.io/">zztracy blog</a></span> · 
+        <span>&copy; 2025 <a href="http://localhost:1313/">zztracy blog</a></span> · 
 
     <span>
         Powered by
