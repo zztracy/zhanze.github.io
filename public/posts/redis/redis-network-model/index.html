@@ -26,7 +26,7 @@ sendReplyToClient：命令回复处理器，当事件循环介绍后写缓冲区
 
 ">
 <meta name="author" content="">
-<link rel="canonical" href="http://localhost:1313/posts/redis/redis-network-model/redis-network-model/">
+<link rel="canonical" href="http://localhost:1313/posts/redis/redis-network-model/">
 <link crossorigin="anonymous" href="/assets/css/stylesheet.45e028aa8ce0961349adf411b013ee39406be2c0bc80d4ea3fc04555f7f4611a.css" integrity="sha256-ReAoqozglhNJrfQRsBPuOUBr4sC8gNTqP8BFVff0YRo=" rel="preload stylesheet" as="style">
 <link rel="icon" href="http://localhost:1313/favicon.ico">
 <link rel="icon" type="image/png" sizes="16x16" href="http://localhost:1313/favicon-16x16.png">
@@ -35,7 +35,7 @@ sendReplyToClient：命令回复处理器，当事件循环介绍后写缓冲区
 <link rel="mask-icon" href="http://localhost:1313/safari-pinned-tab.svg">
 <meta name="theme-color" content="#2e2e33">
 <meta name="msapplication-TileColor" content="#2e2e33">
-<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/redis/redis-network-model/redis-network-model/">
+<link rel="alternate" hreflang="en" href="http://localhost:1313/posts/redis/redis-network-model/">
 <noscript>
     <style>
         #theme-toggle,
@@ -144,10 +144,7 @@ sendReplyToClient：命令回复处理器，当事件循环介绍后写缓冲区
     <div class="post-meta"><span title='2025-02-07 00:00:00 +0000 UTC'>February 7, 2025</span>
 
 </div>
-  </header> 
-<figure class="entry-cover"><img loading="eager" src="http://localhost:1313/img/redis-network-model.png" alt="This is a post image">
-        <p>Redis Network Model</p>
-</figure><div class="toc">
+  </header> <div class="toc">
     <details >
         <summary accesskey="c" title="(Alt + C)">
             <span class="details">Table of Contents</span>
@@ -185,7 +182,7 @@ sendReplyToClient：命令回复处理器，当事件循环介绍后写缓冲区
 <li>beforeSleep：在事件循环进入 aeApiPoll 等待事件到达之前执行的函数，包括一些常规任务，如将client-&gt;buf 或者 client-&gt;reply（buf 有指定容量，reply 是个链表，理论上容量无限）中的响应写会到客户端，将 AOF 缓冲区中的数据持久化到磁盘等等</li>
 <li>sendReplyToClient：命令回复处理器，当事件循环介绍后写缓冲区仍然有数据时，该处理器会被注册并绑定到相应连接上，当连接触发写就绪事件时候，它会将写缓冲区剩余的数据写回到客户端</li>
 </ul>
-<p><img alt="image-20250213162703397" loading="lazy" src="./images/image-20250213162703397.png"></p>
+<p><img alt="image-20250213162703397" loading="lazy" src="/posts/redis/redis-network-model/images/image-20250213162703397.png"></p>
 <p>Redis 网络模型的工作流程</p>
 <ol>
 <li>Redis 服务器启动，打开主线程事件循环，将acceptTcpHandler注册到用户配置的监听端口对应的文件描述符上，创建 server socket，等待连接到大</li>
@@ -207,7 +204,7 @@ sendReplyToClient：命令回复处理器，当事件循环介绍后写缓冲区
 <li>Redis 在下一次 epoll_wait 循环中监听到客户端 socket 的写事件就绪，再通过多线程的方式，每个 socket 分配一个线程进行串行的回写数据
 需要注意的是，Redis 开启多线程后不保证多个客户端之间命令的串行性，只保证单个客户端内部命令执行以及响应的串行性（通过为一个客户端分配一个单独的线程串行执行来完成），这种设计满足大部分场景的要求，因为客户端通常只关注自身操作的原子性。</li>
 </ol>
-<p><img alt="image-20250213170028395" loading="lazy" src="./images/image-20250213170028395.png"></p>
+<p><img alt="image-20250213170028395" loading="lazy" src="/posts/redis/redis-network-model/images/image-20250213170028395.png"></p>
 
 
   </div>
